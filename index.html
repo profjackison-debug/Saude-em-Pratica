@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Saúde em Prática – Matemática, Alimentação e Movimento</title>
+    <meta name="description" content="Interface conceitual e interativa do jogo educativo Saúde em Prática: Matemática, Alimentação e Movimento." />
+    <meta property="og:title" content="Saúde em Prática – Matemática, Alimentação e Movimento" />
+    <meta property="og:description" content="Interface conceitual e interativa do jogo educativo Saúde em Prática: Matemática, Alimentação e Movimento." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+      try {
+        if (localStorage.getItem('saude_em_pratica_theme') === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body class="bg-[#f0f7f7] text-slate-800 antialiased selection:bg-teal-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

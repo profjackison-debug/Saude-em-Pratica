@@ -1,0 +1,6 @@
+{
+  "name": "Saúde em Prática",
+  "description": "Interface conceitual e interativa do jogo educativo Saúde em Prática: Matemática, Alimentação e Movimento.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
