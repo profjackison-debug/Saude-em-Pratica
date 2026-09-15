@@ -8,6 +8,7 @@ interface MissionModalProps {
   challenges: MathChallenge[];
   initialChallengeIndex?: number;
   badges: LearningBadge[];
+  solvedChallengeIds: string[];
   onClose: () => void;
   onSolveChallenge: (challengeId: string) => void;
   onUnlockBadge: (badgeId: string) => void;
@@ -18,6 +19,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   challenges,
   initialChallengeIndex = 0,
   badges,
+  solvedChallengeIds,
   onClose,
   onSolveChallenge,
   onUnlockBadge,
@@ -26,9 +28,9 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   const [currentIndex, setCurrentIndex] = useState(initialChallengeIndex);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [solvedChallenges, setSolvedChallenges] = useState<Set<string>>(new Set());
 
   const currentChallenge = challenges[currentIndex];
+  if (!currentChallenge) return null;
   const selectedOption = currentChallenge.options.find((o) => o.id === selectedOptionId);
 
   const getTargetScreen = (area: 'refeicoes' | 'imc' | 'movimento'): { id: AppScreenId; name: string; icon: string } => {
@@ -49,13 +51,14 @@ export const MissionModal: React.FC<MissionModalProps> = ({
     setSelectedOptionId(id);
   };
 
+  const isAlreadySolved = solvedChallengeIds.includes(currentChallenge.id);
+
   const handleSubmitAnswer = () => {
     if (!selectedOption) return;
     setHasSubmitted(true);
 
-    if (selectedOption.isCorrect) {
+    if (selectedOption.isCorrect && !isAlreadySolved) {
       playStarSound();
-      setSolvedChallenges((prev) => new Set(prev).add(currentChallenge.id));
       onSolveChallenge(currentChallenge.id);
 
       // Trigger celebration confetti

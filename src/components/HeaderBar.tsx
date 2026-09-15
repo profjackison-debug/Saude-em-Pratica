@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Award, Settings, Sparkles, Volume2, VolumeX, Camera, Trophy, User, Moon, Sun } from 'lucide-react';
+import { Star, Award, Settings, Sparkles, Volume2, VolumeX, Trophy, User, Moon, Sun, LogOut } from 'lucide-react';
 import { LearningBadge, StudentProfile } from '../types';
 import { playClickSound, playStarSound } from '../utils/audio';
 
@@ -7,12 +7,15 @@ interface HeaderBarProps {
   progressPercentage: number;
   starsCount: number;
   badges: LearningBadge[];
-  currentStudent?: StudentProfile;
+  currentStudent?: StudentProfile | null;
+  solvedMissionsCount?: number;
+  totalMissionsCount?: number;
   onStartMission: () => void;
   onOpenExportModal: () => void;
   onOpenSettings: () => void;
   onOpenRank?: () => void;
   onOpenLoginModal?: () => void;
+  onLogout?: () => void;
   isMuted: boolean;
   onToggleMute: () => void;
   theme?: 'light' | 'dark';
@@ -24,21 +27,26 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   starsCount,
   badges,
   currentStudent,
+  solvedMissionsCount = 0,
+  totalMissionsCount = 4,
   onStartMission,
   onOpenExportModal,
   onOpenSettings,
   onOpenRank,
   onOpenLoginModal,
+  onLogout,
   isMuted,
   onToggleMute,
   theme = 'light',
   onToggleTheme,
 }) => {
   const unlockedBadgesCount = badges.filter((b) => b.unlocked).length;
+  const solvedCount = currentStudent ? currentStudent.completedMissions : solvedMissionsCount;
+  const progressPercent = totalMissionsCount > 0 ? Math.round((solvedCount / totalMissionsCount) * 100) : 0;
 
   return (
     <header className="w-full bg-transparent px-3 sm:px-6 py-2.5 z-30">
-      <div className="max-w-[1750px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-3">
+      <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-3">
         {/* Left: Logo with Leaves & Speech Bubble */}
         <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
           <div className="flex items-center gap-2">
@@ -49,8 +57,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 <div className="relative">
                   {/* Two Leaves SVG */}
                   <svg
-                    width="36"
-                    height="36"
+                    width="40"
+                    height="40"
                     viewBox="0 0 40 40"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -75,10 +83,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   </svg>
                 </div>
                 <div>
-                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-teal-950 dark:text-teal-100 font-display flex items-center gap-1.5 leading-none">
+                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-teal-950 dark:text-teal-100 font-display flex items-center gap-1.5 leading-none">
                     Saúde em Prática
                   </h1>
-                  <p className="text-[11px] sm:text-xs font-bold text-teal-900 dark:text-blue-300 tracking-tight mt-0.5">
+                  <p className="text-xs sm:text-sm font-bold text-teal-900 dark:text-blue-300 tracking-tight mt-1">
                     Matemática, Alimentação e Movimento
                   </p>
                 </div>
@@ -87,11 +95,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </div>
 
           {/* Speech Bubble: "Conhecimento hoje, mais saúde amanhã!" */}
-          <div className="hidden sm:flex relative bg-white/95 dark:bg-[#0f1b33] border border-teal-200/90 dark:border-blue-700/80 text-teal-950 dark:text-blue-100 px-3 py-1.5 rounded-2xl shadow-xs text-xs font-bold items-center leading-snug">
+          <div className="hidden sm:flex relative bg-white/95 dark:bg-[#0f1b33] border border-teal-200/90 dark:border-blue-700/80 text-teal-950 dark:text-blue-100 px-3.5 py-1.5 rounded-2xl shadow-xs text-xs sm:text-sm font-bold items-center leading-snug">
             {/* Pointer tail */}
             <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-6 border-r-teal-200 dark:border-r-blue-700" />
             <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-0 h-0 border-t-3 border-t-transparent border-b-3 border-b-transparent border-r-5 border-r-white dark:border-r-[#0f1b33]" />
-            <span className="text-[11px] font-extrabold text-teal-900 dark:text-blue-200">
+            <span className="text-xs sm:text-sm font-extrabold text-teal-900 dark:text-blue-200">
               Conhecimento hoje, mais saúde amanhã!
             </span>
           </div>
@@ -104,47 +112,49 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                   playClickSound();
                   onToggleTheme();
                 }}
-                className="p-2 rounded-xl bg-white dark:bg-[#0f1b33] border border-slate-200 dark:border-blue-800 text-teal-700 dark:text-blue-300 hover:bg-slate-50 dark:hover:bg-blue-900/40 transition"
+                className="p-2.5 rounded-xl bg-white dark:bg-[#0f1b33] border border-slate-200 dark:border-blue-800 text-teal-700 dark:text-blue-300 hover:bg-slate-50 dark:hover:bg-blue-900/40 transition"
                 title={theme === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
               >
-                {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-teal-700" />}
+                {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-teal-700" />}
               </button>
             )}
             <button
               onClick={onToggleMute}
-              className="p-2 rounded-xl bg-white dark:bg-[#0f1b33] border border-slate-200 dark:border-blue-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-blue-900/40 transition"
+              className="p-2.5 rounded-xl bg-white dark:bg-[#0f1b33] border border-slate-200 dark:border-blue-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-blue-900/40 transition"
               title={isMuted ? 'Ativar som' : 'Desativar som'}
             >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-teal-600 dark:text-blue-400" />}
+              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5 text-teal-600 dark:text-blue-400" />}
             </button>
             <button
               onClick={onOpenSettings}
-              className="p-2 rounded-xl bg-white dark:bg-[#0f1b33] border border-slate-200 dark:border-blue-800 text-teal-700 dark:text-blue-300 hover:bg-slate-50 dark:hover:bg-blue-900/40 transition"
+              className="p-2.5 rounded-xl bg-white dark:bg-[#0f1b33] border border-slate-200 dark:border-blue-800 text-teal-700 dark:text-blue-300 hover:bg-slate-50 dark:hover:bg-blue-900/40 transition"
               title="Configurações"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Center: "Seu progresso" (Green Progress Bar Pill) */}
-        <div className="flex items-center gap-3 bg-white/90 dark:bg-[#0f1b33]/90 border border-teal-200/80 dark:border-blue-700/80 px-4 py-1.5 rounded-2xl shadow-xs w-full lg:w-auto min-w-[280px]">
+        <div className="flex items-center gap-3 bg-white/90 dark:bg-[#0f1b33]/90 border border-teal-200/80 dark:border-blue-700/80 px-4 py-2 rounded-2xl shadow-xs w-full lg:w-auto min-w-[280px]">
           <div className="flex-1">
-            <div className="flex justify-between items-center mb-1 text-xs">
-              <span className="font-extrabold text-teal-950 dark:text-blue-100 text-[11px]">Seu progresso</span>
-              <span className="font-bold text-teal-800 dark:text-blue-300 text-[10px]">3 de 4 missões</span>
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="font-black text-teal-950 dark:text-blue-100 text-xs sm:text-sm">Seu progresso</span>
+              <span className="font-bold text-teal-800 dark:text-blue-300 text-xs sm:text-sm">
+                {solvedCount} de {totalMissionsCount} missões
+              </span>
             </div>
-            <div className="w-full h-2.5 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+            <div className="w-full h-3 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 shadow-inner">
               <div
                 className="h-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 dark:from-blue-500 dark:via-sky-400 dark:to-blue-600 rounded-full transition-all duration-500 shadow-xs"
-                style={{ width: `${Math.max(15, progressPercentage)}%` }}
+                style={{ width: `${progressPercent}%` }}
               />
             </div>
           </div>
         </div>
 
         {/* Right: Gamification Badges, Ranking Button & Student Profile Pill */}
-        <div className="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap">
+        <div className="flex items-center gap-2.5 w-full lg:w-auto justify-end flex-wrap">
           {/* Ranking Button with Golden Trophy */}
           {onOpenRank && (
             <button
@@ -152,62 +162,91 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 playStarSound();
                 onOpenRank();
               }}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-amber-950 font-black px-3 py-1.5 rounded-2xl shadow-sm border border-amber-300 transition cursor-pointer hover:scale-102"
+              className="flex items-center gap-2 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-amber-950 font-black px-3.5 py-2 rounded-2xl shadow-sm border border-amber-300 transition cursor-pointer hover:scale-102"
               title="Abrir Ranking e Hall da Fama da Turma"
             >
-              <Trophy className="w-4 h-4 fill-amber-950/20 text-amber-950" />
-              <span className="text-xs">Ranking</span>
+              <Trophy className="w-4.5 h-4.5 fill-amber-950/20 text-amber-950" />
+              <span className="text-xs sm:text-sm font-black">Ranking</span>
             </button>
           )}
 
-          {/* 12 estrelas */}
-          <div className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 px-3 py-1.5 rounded-2xl shadow-xs">
-            <div className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center text-white shadow-xs">
-              <Star className="w-3.5 h-3.5 fill-white text-white" />
+          {/* Estrelas */}
+          <div className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 px-3.5 py-1.5 rounded-2xl shadow-xs">
+            <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-white shadow-xs">
+              <Star className="w-4 h-4 fill-white text-white" />
             </div>
-            <span className="text-xs font-black">{starsCount || 12}</span>
-            <span className="text-[11px] font-bold text-amber-800 dark:text-amber-300">estrelas</span>
+            <span className="text-sm sm:text-base font-black">{starsCount ?? 0}</span>
+            <span className="text-xs sm:text-sm font-bold text-amber-800 dark:text-amber-300">estrelas</span>
           </div>
 
-          {/* 4 medalhas */}
-          <div className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-200 dark:border-blue-700/60 text-slate-800 dark:text-slate-200 px-3 py-1.5 rounded-2xl shadow-xs">
-            <div className="w-5 h-5 rounded-full bg-gradient-to-b from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-xs">
-              <Award className="w-3.5 h-3.5 text-white" />
+          {/* Medalhas */}
+          <div className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-200 dark:border-blue-700/60 text-slate-800 dark:text-slate-200 px-3.5 py-1.5 rounded-2xl shadow-xs">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-xs">
+              <Award className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xs font-black">{unlockedBadgesCount || 4}</span>
-            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">medalhas</span>
+            <span className="text-sm sm:text-base font-black">{unlockedBadgesCount}</span>
+            <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">medalhas</span>
           </div>
 
-          {/* Student Profile Badge */}
-          <div
-            onClick={() => {
-              playClickSound();
-              if (onOpenLoginModal) {
-                onOpenLoginModal();
-              } else {
-                onOpenSettings();
-              }
-            }}
-            className="flex items-center gap-2 bg-white/95 dark:bg-[#0f1b33] border border-teal-200/90 dark:border-blue-700 hover:border-teal-400 dark:hover:border-blue-500 px-2.5 py-1 rounded-2xl shadow-xs cursor-pointer transition group"
-            title="Clique para abrir perfil, trocar de estudante ou ver conquistas"
-          >
-            {/* Avatar */}
-            <div className={`w-8 h-8 rounded-full bg-gradient-to-tr ${currentStudent?.avatarBg || 'from-sky-400 to-teal-500'} p-0.5 shadow-xs`}>
-              <div className="w-full h-full bg-white dark:bg-[#162544] rounded-full flex items-center justify-center text-sm">
-                {currentStudent?.avatarEmoji || '🧑‍🎓'}
-              </div>
+          {/* Student Profile Badge or Login Button */}
+          {currentStudent ? (
+            <div className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-teal-200/90 dark:border-blue-700 hover:border-teal-400 dark:hover:border-blue-500 pl-2.5 pr-2 py-1.5 rounded-2xl shadow-xs transition group">
+              <button
+                type="button"
+                onClick={() => {
+                  playClickSound();
+                  if (onOpenLoginModal) onOpenLoginModal();
+                  else onOpenSettings();
+                }}
+                className="flex items-center gap-2.5 text-left cursor-pointer transition"
+                title="Clique para abrir perfil ou trocar de estudante"
+              >
+                {/* Avatar */}
+                <div className={`w-9 h-9 rounded-full bg-gradient-to-tr ${currentStudent.avatarBg || 'from-sky-400 to-teal-500'} p-0.5 shadow-xs`}>
+                  <div className="w-full h-full bg-white dark:bg-[#162544] rounded-full flex items-center justify-center text-base">
+                    {currentStudent.avatarEmoji || '🧑‍🎓'}
+                  </div>
+                </div>
+                <div className="flex flex-col text-left leading-tight max-w-[130px]">
+                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-blue-300 transition truncate">
+                    {currentStudent.name}
+                  </span>
+                  <span className="text-xs font-bold text-slate-500 dark:text-blue-300/80 truncate mt-0.5">
+                    {currentStudent.grade}
+                  </span>
+                </div>
+              </button>
+
+              {/* Logout button */}
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    playClickSound();
+                    onLogout();
+                  }}
+                  className="p-1.5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/60 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer ml-1"
+                  title={`Sair da conta de ${currentStudent.name} (Logout)`}
+                  aria-label="Sair da conta"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              )}
             </div>
-            <div className="flex flex-col text-left leading-tight max-w-[130px]">
-              <span className="text-[11px] font-black text-slate-900 dark:text-slate-100 group-hover:text-teal-700 dark:group-hover:text-blue-300 transition truncate">
-                {currentStudent?.name || 'Estudante'}
-              </span>
-              <span className="text-[9.5px] font-bold text-slate-500 dark:text-blue-300/80 truncate">
-                {currentStudent?.grade || '8º Ano A'}
-              </span>
-            </div>
-            {/* User switch indicator */}
-            <User className="w-3.5 h-3.5 text-slate-400 group-hover:text-teal-600 dark:group-hover:text-blue-300 transition-all ml-0.5" />
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                playClickSound();
+                onOpenLoginModal?.();
+              }}
+              className="flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-2xl shadow-xs border border-teal-400/40 transition cursor-pointer active:scale-95"
+              title="Entrar ou cadastrar perfil de estudante"
+            >
+              <User className="w-4 h-4" />
+              <span>Entrar como Aluno</span>
+            </button>
+          )}
 
           {/* Dark / Light Theme Toggle Button */}
           {onToggleTheme && (
@@ -244,18 +283,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             title="Configurações gerais e som"
           >
             <Settings className="w-4 h-4" />
-          </button>
-
-          {/* Export 16:9 Image Shortcut Button */}
-          <button
-            onClick={() => {
-              playClickSound();
-              onOpenExportModal();
-            }}
-            className="hidden xl:flex items-center gap-1 p-2 rounded-xl bg-white dark:bg-[#0f1b33] border border-teal-200 dark:border-blue-700 text-teal-700 dark:text-blue-300 hover:bg-teal-50 dark:hover:bg-blue-900/40 transition shadow-xs cursor-pointer"
-            title="Exportar imagem da interface (16:9)"
-          >
-            <Camera className="w-4 h-4" />
           </button>
         </div>
 

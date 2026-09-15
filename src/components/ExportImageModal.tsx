@@ -111,7 +111,7 @@ export const ExportImageModal: React.FC<ExportImageModalProps> = ({ onClose }) =
     const btnGrad = ctx.createLinearGradient(1510, 48, 1510, 102);
     btnGrad.addColorStop(0, '#14b8a6');
     btnGrad.addColorStop(1, '#0f766e');
-    roundRect(1510, 48, 330, 54, 18, btnGrad, '#0d5a54', 2);
+    roundRect(1510, 48, 330, 54, 18, btnGrad as unknown as string, '#0d5a54', 2);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = '900 22px "Outfit", sans-serif';
@@ -314,11 +314,11 @@ export const ExportImageModal: React.FC<ExportImageModalProps> = ({ onClose }) =
       ctx.fillText(c.grams, cardX + cardW / 2, cardsY + 102);
     });
 
-    // Reference TACO/UNICAMP
+    // Reference
     ctx.textAlign = 'right';
     ctx.font = 'italic 12px sans-serif';
     ctx.fillStyle = '#64748b';
-    ctx.fillText('Dados de alimentos: TACO/UNICAMP', cX + cW - 24, panelY + panelHeight - 16);
+    ctx.fillText('Guia Alimentar para a População Brasileira', cX + cW - 24, panelY + panelHeight - 16);
 
     // ------------------------------------------
     // AREA 2: PESO E SAÚDE (LEFT LATERAL PANEL)

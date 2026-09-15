@@ -26,8 +26,8 @@ export const CategoryInfoModal: React.FC<CategoryInfoModalProps> = ({
           desc: 'Aprenda a analisar razões matemáticas entre massa e altura, proporções de nutrientes no prato e frações do dia dedicadas ao movimento.',
         },
         {
-          title: 'Tabela TACO / UNICAMP',
-          desc: 'Todos os valores nutricionais do jogo são reais, extraídos da 4ª edição da Tabela Brasileira de Composição de Alimentos.',
+          title: 'Composição de Alimentos',
+          desc: 'Os valores nutricionais do jogo são baseados em referências oficiais de composição dos alimentos da culinária brasileira.',
         },
         {
           title: 'Educação para a Saúde',

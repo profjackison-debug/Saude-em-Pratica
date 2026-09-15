@@ -19,160 +19,79 @@ export const STUDENT_AVATARS: AvatarOption[] = [
 ];
 
 export const GRADE_OPTIONS = [
-  '7º Ano A',
-  '7º Ano B',
-  '8º Ano A',
-  '8º Ano B',
-  '6º Ano A',
-  '6º Ano B',
-  '9º Ano A',
-  '9º Ano B',
-  'Ensino Médio 1ª Série',
+  '6° Ano',
+  '7° Ano',
+  '8° Ano',
+  '9° Ano',
+  '1° Ano E.M',
+  '2° Ano E.M',
+  '3° Ano E.M',
 ];
 
-export const INITIAL_PEER_RANKINGS: RankEntry[] = [
-  {
-    id: 'peer_1',
-    name: 'Sofia Ribeiro',
-    grade: '8º Ano A',
-    school: 'CETi Central',
-    avatarEmoji: '👧🏽',
-    avatarBg: 'from-amber-400 to-orange-500',
-    starsCount: 18,
-    score: 1850,
-    completedMissions: 6,
-    badgesCount: 5,
-  },
-  {
-    id: 'peer_2',
-    name: 'Lucas Rocha',
-    grade: '8º Ano A',
-    school: 'CETi Central',
-    avatarEmoji: '👦🏻',
-    avatarBg: 'from-sky-400 to-blue-600',
-    starsCount: 16,
-    score: 1620,
-    completedMissions: 5,
-    badgesCount: 4,
-  },
-  {
-    id: 'peer_3',
-    name: 'Gabriel Santos',
-    grade: '8º Ano B',
-    school: 'CETi Central',
-    avatarEmoji: '🧑🏼‍🦽',
-    avatarBg: 'from-indigo-400 to-purple-600',
-    starsCount: 15,
-    score: 1480,
-    completedMissions: 5,
-    badgesCount: 4,
-  },
-  {
-    id: 'peer_4',
-    name: 'Mariana Lima',
-    grade: '7º Ano A',
-    school: 'CETi Central',
-    avatarEmoji: '👩🏾',
-    avatarBg: 'from-rose-400 to-pink-500',
-    starsCount: 14,
-    score: 1350,
-    completedMissions: 4,
-    badgesCount: 4,
-  },
-  {
-    id: 'peer_5',
-    name: 'Enzo Ferreira',
-    grade: '7º Ano B',
-    school: 'CETi Central',
-    avatarEmoji: '🧑‍🎓',
-    avatarBg: 'from-teal-400 to-emerald-500',
-    starsCount: 13,
-    score: 1220,
-    completedMissions: 4,
-    badgesCount: 3,
-  },
-  {
-    id: 'peer_6',
-    name: 'Beatriz Souza',
-    grade: '8º Ano A',
-    school: 'CETi Central',
-    avatarEmoji: '🎨',
-    avatarBg: 'from-purple-400 to-pink-500',
-    starsCount: 11,
-    score: 1040,
-    completedMissions: 3,
-    badgesCount: 3,
-  },
-  {
-    id: 'peer_7',
-    name: 'Pedro Álvares',
-    grade: '7º Ano A',
-    school: 'CETi Central',
-    avatarEmoji: '🧒🏿',
-    avatarBg: 'from-emerald-400 to-teal-600',
-    starsCount: 10,
-    score: 950,
-    completedMissions: 3,
-    badgesCount: 3,
-  },
-  {
-    id: 'peer_8',
-    name: 'Camila Duarte',
-    grade: '8º Ano B',
-    school: 'CETi Central',
-    avatarEmoji: '🧑🏽‍🍳',
-    avatarBg: 'from-orange-400 to-amber-600',
-    starsCount: 9,
-    score: 870,
-    completedMissions: 2,
-    badgesCount: 2,
-  },
-];
+export const INITIAL_PEER_RANKINGS: RankEntry[] = [];
 
 const LOCAL_STORAGE_KEY_CURRENT_STUDENT = 'saude_pratica_active_student_v1';
 const LOCAL_STORAGE_KEY_ALL_STUDENTS = 'saude_pratica_saved_students_v1';
 
-export const DEFAULT_STUDENT: StudentProfile = {
-  id: 'student_default_1',
-  name: 'Lucas Estudante',
-  grade: '8º Ano A',
-  school: 'CETi Central',
-  avatarEmoji: '🧑‍🎓',
-  avatarBg: 'from-teal-400 to-emerald-500',
-  starsCount: 12,
-  score: 1200,
-  completedMissions: 3,
-  platesBalanced: 4,
-  activeMinutesTotal: 280,
-  joinedAt: 'Hoje',
-};
-
-export const loadStoredStudent = (): StudentProfile => {
+export const loadStoredStudent = (): StudentProfile | null => {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.name) {
-        return parsed;
+      if (
+        parsed &&
+        typeof parsed.id === 'string' &&
+        typeof parsed.name === 'string' &&
+        parsed.name.trim().length > 0
+      ) {
+        // Remover dados de usuário fictício de testes anteriores se existirem
+        if (parsed.id === 'student_default_1' || parsed.name === 'Lucas Estudante') {
+          localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT);
+          return null;
+        }
+        return {
+          ...parsed,
+          name: parsed.name.trim().slice(0, 40),
+          school: (parsed.school || 'CETi Agostinho Ernesto de Almeida').trim().slice(0, 50),
+          starsCount: Number.isFinite(parsed.starsCount) ? Math.max(0, parsed.starsCount) : 0,
+          score: Number.isFinite(parsed.score) ? Math.max(0, parsed.score) : 0,
+          completedMissions: Number.isFinite(parsed.completedMissions) ? Math.max(0, parsed.completedMissions) : 0,
+        };
       }
     }
   } catch (e) {
     console.warn('Erro ao carregar estudante do localStorage:', e);
   }
-  return DEFAULT_STUDENT;
+  return null;
+};
+
+export const clearStoredStudent = (): void => {
+  try {
+    localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT);
+  } catch (e) {
+    console.warn('Erro ao limpar estudante do localStorage:', e);
+  }
 };
 
 export const saveStoredStudent = (student: StudentProfile): void => {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT, JSON.stringify(student));
-    
+    const sanitizedStudent: StudentProfile = {
+      ...student,
+      name: (student.name || '').trim().slice(0, 40),
+      school: (student.school || 'CETi Agostinho Ernesto de Almeida').trim().slice(0, 50),
+      starsCount: Number.isFinite(student.starsCount) ? Math.max(0, student.starsCount) : 0,
+      score: Number.isFinite(student.score) ? Math.max(0, student.score) : 0,
+      completedMissions: Number.isFinite(student.completedMissions) ? Math.max(0, student.completedMissions) : 0,
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT, JSON.stringify(sanitizedStudent));
+
     // Also add/update in saved students list
     const saved = loadSavedStudentsList();
-    const existingIndex = saved.findIndex((s) => s.id === student.id);
+    const existingIndex = saved.findIndex((s) => s.id === sanitizedStudent.id);
     if (existingIndex >= 0) {
-      saved[existingIndex] = student;
+      saved[existingIndex] = sanitizedStudent;
     } else {
-      saved.unshift(student);
+      saved.unshift(sanitizedStudent);
     }
     localStorage.setItem(LOCAL_STORAGE_KEY_ALL_STUDENTS, JSON.stringify(saved.slice(0, 10)));
   } catch (e) {
@@ -186,11 +105,35 @@ export const loadSavedStudentsList = (): StudentProfile[] => {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        const cleaned = parsed
+          .filter(
+            (s): s is StudentProfile =>
+              Boolean(
+                s &&
+                typeof s.id === 'string' &&
+                typeof s.name === 'string' &&
+                s.name.trim().length > 0 &&
+                s.id !== 'student_default_1' &&
+                s.name !== 'Lucas Estudante'
+              )
+          )
+          .map((s) => ({
+            ...s,
+            name: s.name.trim().slice(0, 40),
+            school: (s.school || 'CETi Agostinho Ernesto de Almeida').trim().slice(0, 50),
+            starsCount: Number.isFinite(s.starsCount) ? Math.max(0, s.starsCount) : 0,
+            score: Number.isFinite(s.score) ? Math.max(0, s.score) : 0,
+            completedMissions: Number.isFinite(s.completedMissions) ? Math.max(0, s.completedMissions) : 0,
+          }));
+
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(LOCAL_STORAGE_KEY_ALL_STUDENTS, JSON.stringify(cleaned));
+        }
+        return cleaned;
       }
     }
   } catch (e) {
     console.warn('Erro ao carregar lista de estudantes:', e);
   }
-  return [DEFAULT_STUDENT];
+  return [];
 };

@@ -3,7 +3,11 @@
  * Runs safely in browser without external sound assets.
  */
 let audioCtx: AudioContext | null = null;
-let isMuted = false;
+
+const MUTED_KEY = 'saude_pratica_muted_v1';
+let isMuted = (() => {
+  try { return localStorage.getItem(MUTED_KEY) === 'true'; } catch { return false; }
+})();
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -21,7 +25,13 @@ function getAudioContext(): AudioContext | null {
 
 export function toggleAudioMute(): boolean {
   isMuted = !isMuted;
+  try { localStorage.setItem(MUTED_KEY, String(isMuted)); } catch { /* ignore */ }
   return isMuted;
+}
+
+export function setAudioMuted(muted: boolean): void {
+  isMuted = muted;
+  try { localStorage.setItem(MUTED_KEY, String(isMuted)); } catch { /* ignore */ }
 }
 
 export function getAudioMuted(): boolean {

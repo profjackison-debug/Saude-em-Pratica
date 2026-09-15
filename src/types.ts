@@ -81,7 +81,7 @@ export interface MathChallenge {
   }[];
 }
 
-export type AppScreenId = 'all' | 'meals' | 'weight' | 'active_week' | 'ranking';
+export type AppScreenId = 'meals' | 'weight' | 'active_week' | 'ranking';
 
 export interface StudentProfile {
   id: string;

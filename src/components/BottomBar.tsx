@@ -18,11 +18,11 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onStartMission, onOpenCate
         </div>
 
         {/* Speech Bubble */}
-        <div className="relative bg-white/95 dark:bg-[#0f1b33]/95 border-2 border-teal-200/90 dark:border-blue-700 text-slate-800 dark:text-slate-100 px-4 py-2.5 rounded-2xl shadow-sm max-w-[220px] text-xs font-bold leading-snug transition-colors">
+        <div className="relative bg-white/95 dark:bg-[#0f1b33]/95 border-2 border-teal-200/90 dark:border-blue-700 text-slate-800 dark:text-slate-100 px-4 py-2.5 rounded-2xl shadow-sm max-w-[250px] text-xs sm:text-sm font-bold leading-snug transition-colors">
           {/* Bubble pointer tail */}
           <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-0 h-0 border-t-6 border-t-transparent border-b-6 border-b-transparent border-r-8 border-r-teal-200 dark:border-r-blue-700" />
           <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-5 border-t-transparent border-b-5 border-b-transparent border-r-7 border-r-white dark:border-r-[#0f1b33]" />
-          <p className="text-teal-950 dark:text-blue-100 font-extrabold text-[12px]">
+          <p className="text-teal-950 dark:text-blue-100 font-black text-xs sm:text-sm">
             Pequenas escolhas fazem grandes mudanças! 💙
           </p>
         </div>
@@ -59,13 +59,13 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onStartMission, onOpenCate
               playClickSound();
               onOpenCategory('aprender');
             }}
-            className="flex flex-col items-center gap-1 group cursor-pointer"
+            className="flex flex-col items-center gap-1.5 group cursor-pointer"
             title="Conceitos & Saberes"
           >
-            <div className="w-12 h-12 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-md shadow-purple-600/30 border-2 border-purple-300 group-hover:scale-105 transition">
-              <BookOpen className="w-5 h-5" />
+            <div className="w-13 h-13 rounded-full bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center shadow-md shadow-purple-600/30 border-2 border-purple-300 group-hover:scale-105 transition">
+              <BookOpen className="w-6 h-6" />
             </div>
-            <span className="text-[11px] font-extrabold text-purple-900 dark:text-purple-300">Aprender</span>
+            <span className="text-xs sm:text-sm font-extrabold text-purple-900 dark:text-purple-300">Aprender</span>
           </button>
 
           {/* 2. Colaborar (Red/Coral) */}
@@ -74,13 +74,13 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onStartMission, onOpenCate
               playClickSound();
               onOpenCategory('colaborar');
             }}
-            className="flex flex-col items-center gap-1 group cursor-pointer"
+            className="flex flex-col items-center gap-1.5 group cursor-pointer"
             title="Trabalho em Equipe & Convivência"
           >
-            <div className="w-12 h-12 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-md shadow-rose-600/30 border-2 border-rose-300 group-hover:scale-105 transition">
-              <Users className="w-5 h-5" />
+            <div className="w-13 h-13 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center shadow-md shadow-rose-600/30 border-2 border-rose-300 group-hover:scale-105 transition">
+              <Users className="w-6 h-6" />
             </div>
-            <span className="text-[11px] font-extrabold text-rose-900 dark:text-rose-300">Colaborar</span>
+            <span className="text-xs sm:text-sm font-extrabold text-rose-900 dark:text-rose-300">Colaborar</span>
           </button>
 
           {/* 3. Conquistar (Gold/Amber) */}
@@ -89,13 +89,13 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onStartMission, onOpenCate
               playClickSound();
               onOpenCategory('conquistar');
             }}
-            className="flex flex-col items-center gap-1 group cursor-pointer"
+            className="flex flex-col items-center gap-1.5 group cursor-pointer"
             title="Estrelas & Conquistas"
           >
-            <div className="w-12 h-12 rounded-full bg-amber-500 hover:bg-amber-400 text-white flex items-center justify-center shadow-md shadow-amber-500/30 border-2 border-amber-200 group-hover:scale-105 transition">
-              <Star className="w-5 h-5 fill-white" />
+            <div className="w-13 h-13 rounded-full bg-amber-500 hover:bg-amber-400 text-white flex items-center justify-center shadow-md shadow-amber-500/30 border-2 border-amber-200 group-hover:scale-105 transition">
+              <Star className="w-6 h-6 fill-white" />
             </div>
-            <span className="text-[11px] font-extrabold text-amber-900 dark:text-amber-300">Conquistar</span>
+            <span className="text-xs sm:text-sm font-extrabold text-amber-900 dark:text-amber-300">Conquistar</span>
           </button>
 
           {/* 4. Evoluir (Teal) */}
@@ -104,21 +104,21 @@ export const BottomBar: React.FC<BottomBarProps> = ({ onStartMission, onOpenCate
               playClickSound();
               onOpenCategory('evoluir');
             }}
-            className="flex flex-col items-center gap-1 group cursor-pointer"
+            className="flex flex-col items-center gap-1.5 group cursor-pointer"
             title="Evolução & Gráficos"
           >
-            <div className="w-12 h-12 rounded-full bg-teal-600 hover:bg-teal-500 text-white flex items-center justify-center shadow-md shadow-teal-600/30 border-2 border-teal-300 group-hover:scale-105 transition">
-              <BarChart3 className="w-5 h-5" />
+            <div className="w-13 h-13 rounded-full bg-teal-600 hover:bg-teal-500 text-white flex items-center justify-center shadow-md shadow-teal-600/30 border-2 border-teal-300 group-hover:scale-105 transition">
+              <BarChart3 className="w-6 h-6" />
             </div>
-            <span className="text-[11px] font-extrabold text-teal-900 dark:text-blue-300">Evoluir</span>
+            <span className="text-xs sm:text-sm font-extrabold text-teal-900 dark:text-blue-300">Evoluir</span>
           </button>
         </div>
 
         {/* Yellow Sticky Note on far right */}
-        <div className="relative bg-amber-100 dark:bg-amber-950/70 border border-amber-300/80 dark:border-amber-700 px-3 py-2 rounded-xl shadow-xs rotate-2 hover:rotate-0 transition-transform">
+        <div className="relative bg-amber-100 dark:bg-amber-950/70 border border-amber-300/80 dark:border-amber-700 px-3.5 py-2.5 rounded-xl shadow-xs rotate-2 hover:rotate-0 transition-transform">
           {/* Green leaf badge */}
-          <div className="absolute -top-2 -right-1 text-emerald-600 dark:text-emerald-400 text-xs">🌱</div>
-          <div className="text-[11px] font-black text-amber-950 dark:text-amber-200 leading-tight">
+          <div className="absolute -top-2 -right-1 text-emerald-600 dark:text-emerald-400 text-sm">🌱</div>
+          <div className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200 leading-tight">
             Mais saúde,
             <br />
             mais futuro! 💚

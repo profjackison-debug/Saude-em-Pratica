@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Scale, Heart, Info, X, CheckCircle2, BookOpen, ArrowRight } from 'lucide-react';
 import {
-  DiverseStudentsIllustration,
   Calculator3D,
   MeasuringTapeGraphic,
   SpiralNotepadGraphic,
 } from './Illustrations';
+import physicalActivityPhoto from '../assets/atividade_fisica_jovens.jpg';
 import { playClickSound } from '../utils/audio';
 
 interface WeightHealthSectionProps {
@@ -112,12 +112,12 @@ export const BMI_REFERENCE_TABLE: BmiCategory[] = [
 ];
 
 export function getBmiCategory(rawBmi: number): BmiCategory {
-  if (rawBmi < 18.5) return BMI_REFERENCE_TABLE[0];
-  if (rawBmi < 25.0) return BMI_REFERENCE_TABLE[1];
-  if (rawBmi < 30.0) return BMI_REFERENCE_TABLE[2];
-  if (rawBmi < 35.0) return BMI_REFERENCE_TABLE[3];
-  if (rawBmi < 40.0) return BMI_REFERENCE_TABLE[4];
-  return BMI_REFERENCE_TABLE[5];
+  if (rawBmi < 18.5) return BMI_REFERENCE_TABLE[0]!;
+  if (rawBmi < 25.0) return BMI_REFERENCE_TABLE[1]!;
+  if (rawBmi < 30.0) return BMI_REFERENCE_TABLE[2]!;
+  if (rawBmi < 35.0) return BMI_REFERENCE_TABLE[3]!;
+  if (rawBmi < 40.0) return BMI_REFERENCE_TABLE[4]!;
+  return BMI_REFERENCE_TABLE[5]!;
 }
 
 // Sub-component: Ministry of Health Reference Table
@@ -134,7 +134,7 @@ export const MinistryOfHealthTable: React.FC<ReferenceTableProps> = ({ currentCa
           <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white font-display">
             Tabela de Referência para Adultos
           </h4>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+          <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal mt-0.5">
             Referência epidemiológica do Ministério da Saúde para adultos de 20 a 59 anos (fora do período gestacional).
           </p>
         </div>
@@ -143,12 +143,12 @@ export const MinistryOfHealthTable: React.FC<ReferenceTableProps> = ({ currentCa
       <div className="border border-slate-200 dark:border-blue-800/80 rounded-2xl overflow-hidden bg-white dark:bg-[#0c1830] shadow-xs">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 dark:bg-[#0f1f3d] border-b border-slate-200 dark:border-blue-800/80 text-[11px] font-bold text-slate-800 dark:text-slate-200">
+            <tr className="bg-slate-50 dark:bg-[#0f1f3d] border-b border-slate-200 dark:border-blue-800/80 text-xs font-bold text-slate-800 dark:text-slate-200">
               <th className="py-2.5 px-3">Faixa de IMC (kg/m²)</th>
               <th className="py-2.5 px-3">Classificação do Ministério da Saúde</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-blue-900/50 text-xs">
+          <tbody className="divide-y divide-slate-100 dark:divide-blue-900/50 text-xs sm:text-sm">
             {BMI_REFERENCE_TABLE.map((item) => {
               const isSelected = item.id === currentCategoryId;
               return (
@@ -172,7 +172,7 @@ export const MinistryOfHealthTable: React.FC<ReferenceTableProps> = ({ currentCa
                     <div className="flex items-center justify-between gap-1">
                       <span>{item.classification}</span>
                       {isSelected && (
-                        <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white px-2 py-0.5 rounded-full shadow-2xs shrink-0">
+                        <span className="text-xs font-black uppercase tracking-wider bg-emerald-600 text-white px-2.5 py-0.5 rounded-full shadow-2xs shrink-0">
                           Sua Faixa
                         </span>
                       )}
@@ -251,19 +251,19 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
 
         {/* Consumed Food Banner from Meal Diary */}
         {consumedKcal !== undefined && consumedKcal > 0 && (
-          <div className="mb-3 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-blue-950/60 dark:to-teal-950/50 border border-teal-200 dark:border-blue-800 rounded-2xl p-2.5 sm:p-3 flex items-center justify-between gap-2 shadow-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🥗</span>
+          <div className="mb-3.5 bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-blue-950/60 dark:to-teal-950/50 border border-teal-200 dark:border-blue-800 rounded-2xl p-3 flex items-center justify-between gap-2.5 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">🥗</span>
               <div>
-                <div className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-teal-800 dark:text-blue-300">
+                <div className="text-xs font-black uppercase tracking-wider text-teal-800 dark:text-blue-300">
                   Energia Ingerida no Diário de Hoje
                 </div>
-                <div className="text-xs text-slate-700 dark:text-slate-200 font-bold">
+                <div className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 font-bold mt-0.5">
                   {consumedGrams?.toLocaleString('pt-BR')}g consumidos • <span className="text-emerald-700 dark:text-emerald-400 font-black">{consumedKcal.toLocaleString('pt-BR')} kcal</span>
                 </div>
               </div>
             </div>
-            <div className="text-[10px] font-bold text-teal-700 dark:text-blue-300 bg-teal-100/70 dark:bg-blue-900/60 px-2.5 py-1 rounded-xl hidden sm:block">
+            <div className="text-xs font-bold text-teal-700 dark:text-blue-300 bg-teal-100/70 dark:bg-blue-900/60 px-2.5 py-1 rounded-xl hidden sm:block">
               Ingestão vs Gasto Energético
             </div>
           </div>
@@ -273,47 +273,53 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
         <div className={isFocusedView ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start' : 'space-y-3'}>
           {/* Left Column in Focused (or Full in Sidebar) */}
           <div className={isFocusedView ? 'lg:col-span-6 space-y-3' : 'space-y-3'}>
-            {/* Diverse 4 Students Artwork with Floating Badge */}
-            <div className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-blue-900/80 shadow-xs bg-gradient-to-b from-sky-50 to-white dark:from-blue-950/40 dark:to-[#0f1b33]">
-              <DiverseStudentsIllustration />
+            {/* Diverse Students Physical Activity Photo with Floating Badge */}
+            <div className="relative rounded-2xl overflow-hidden border-2 border-teal-100 dark:border-blue-900/80 shadow-md group">
+              <img
+                src={physicalActivityPhoto}
+                alt="Jovens de diferentes gêneros praticando atividade física com alegria e bem-estar"
+                className="w-full h-48 sm:h-56 md:h-64 object-cover object-[center_35%] transition-transform duration-500 group-hover:scale-105"
+                loading="eager"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/10 pointer-events-none" />
 
               {/* Floating Badge: "Saúde vai além de um número!" */}
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-[#0f1b33]/95 border border-rose-200 dark:border-blue-700 text-slate-900 dark:text-blue-100 px-3.5 py-1 rounded-full shadow-md flex items-center gap-1.5 whitespace-nowrap">
-                <span className="text-xs">❤️</span>
-                <span className="text-[11px] font-black tracking-tight text-teal-950 dark:text-blue-200">
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-[#0f1b33]/95 backdrop-blur-xs border border-rose-200 dark:border-blue-700 text-slate-900 dark:text-blue-100 px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2 whitespace-nowrap">
+                <span className="text-sm">❤️</span>
+                <span className="text-xs sm:text-sm font-black tracking-tight text-teal-950 dark:text-blue-200">
                   Saúde vai além de um número!
                 </span>
               </div>
             </div>
 
             {/* Formula Card */}
-            <div className="bg-slate-50/90 dark:bg-[#132240] border-2 border-slate-200/90 dark:border-blue-800/80 rounded-2xl p-3 text-center shadow-xs">
-              <div className="font-mono text-xs sm:text-sm font-black text-indigo-950 dark:text-sky-300">
+            <div className="bg-slate-50/90 dark:bg-[#132240] border-2 border-slate-200/90 dark:border-blue-800/80 rounded-2xl p-3.5 text-center shadow-xs">
+              <div className="font-mono text-sm sm:text-base font-black text-indigo-950 dark:text-sky-300">
                 IMC = massa (kg) ÷ [altura (m)]²
               </div>
-              <div className="text-[11px] font-mono font-bold text-sky-700 dark:text-sky-300 mt-1">
+              <div className="text-xs sm:text-sm font-mono font-bold text-sky-700 dark:text-sky-300 mt-1">
                 {massKg} kg ÷ ({heightM.toFixed(2)} m)² = {calculatedBMI} kg/m²
               </div>
             </div>
 
             {/* Data input controls for the student */}
-            <div className="bg-sky-50/70 dark:bg-[#0d1b34] border-2 border-sky-200 dark:border-blue-800/80 rounded-2xl p-3 sm:p-3.5 space-y-3">
-              <div className="flex items-center justify-between pb-1.5 border-b border-sky-200/80 dark:border-blue-800/80">
-                <span className="text-xs font-black uppercase text-sky-950 dark:text-sky-200 flex items-center gap-1.5">
+            <div className="bg-sky-50/70 dark:bg-[#0d1b34] border-2 border-sky-200 dark:border-blue-800/80 rounded-2xl p-3.5 sm:p-4 space-y-3.5">
+              <div className="flex items-center justify-between pb-2 border-b border-sky-200/80 dark:border-blue-800/80">
+                <span className="text-xs sm:text-sm font-black uppercase text-sky-950 dark:text-sky-200 flex items-center gap-2">
                   <span>✍️</span> Seus Dados de Medição
                 </span>
-                <span className="text-[10px] font-bold text-sky-800 dark:text-sky-300 bg-sky-200/60 dark:bg-sky-900/60 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-bold text-sky-800 dark:text-sky-300 bg-sky-200/60 dark:bg-sky-900/60 px-2.5 py-0.5 rounded-md">
                   Digite ou deslize
                 </span>
               </div>
 
               {/* Mass (kg) */}
-              <div className="bg-white dark:bg-[#132240] p-2.5 rounded-xl border border-sky-100 dark:border-blue-800/80 shadow-2xs">
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+              <div className="bg-white dark:bg-[#132240] p-3 rounded-xl border border-sky-100 dark:border-blue-800/80 shadow-2xs">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                     <span>Massa / Peso:</span>
                   </label>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <input
                       type="number"
                       min="30"
@@ -321,9 +327,9 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
                       step="0.5"
                       value={massKg}
                       onChange={(e) => handleMassInput(parseFloat(e.target.value))}
-                      className="w-20 px-2 py-0.5 text-right font-mono font-black text-sm text-sky-900 dark:text-sky-200 bg-sky-50 dark:bg-blue-950/80 border border-sky-300 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      className="w-22 px-2.5 py-1 text-right font-mono font-black text-sm sm:text-base text-sky-900 dark:text-sky-200 bg-sky-50 dark:bg-blue-950/80 border border-sky-300 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
-                    <span className="text-xs font-black text-slate-500">kg</span>
+                    <span className="text-xs sm:text-sm font-black text-slate-500">kg</span>
                   </div>
                 </div>
                 <input
@@ -338,12 +344,12 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
               </div>
 
               {/* Height (m) */}
-              <div className="bg-white dark:bg-[#132240] p-2.5 rounded-xl border border-sky-100 dark:border-blue-800/80 shadow-2xs">
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+              <div className="bg-white dark:bg-[#132240] p-3 rounded-xl border border-sky-100 dark:border-blue-800/80 shadow-2xs">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <label className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                     <span>Estatura / Altura:</span>
                   </label>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <input
                       type="number"
                       min="1.20"
@@ -351,9 +357,9 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
                       step="0.01"
                       value={heightM}
                       onChange={(e) => handleHeightInput(parseFloat(e.target.value))}
-                      className="w-20 px-2 py-0.5 text-right font-mono font-black text-sm text-sky-900 dark:text-sky-200 bg-sky-50 dark:bg-blue-950/80 border border-sky-300 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      className="w-22 px-2.5 py-1 text-right font-mono font-black text-sm sm:text-base text-sky-900 dark:text-sky-200 bg-sky-50 dark:bg-blue-950/80 border border-sky-300 dark:border-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
-                    <span className="text-xs font-black text-slate-500">m</span>
+                    <span className="text-xs sm:text-sm font-black text-slate-500">m</span>
                   </div>
                 </div>
                 <input
@@ -369,27 +375,27 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
             </div>
 
             {/* Student Classification Card */}
-            <div className={`p-3.5 rounded-2xl border-2 shadow-xs transition-all ${currentCategory.badgeBg}`}>
-              <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{currentCategory.icon}</span>
+            <div className={`p-4 rounded-2xl border-2 shadow-xs transition-all ${currentCategory.badgeBg}`}>
+              <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-3xl">{currentCategory.icon}</span>
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-wider opacity-80">
+                    <div className="text-xs font-black uppercase tracking-wider opacity-80">
                       Sua Classificação (Ministério da Saúde)
                     </div>
-                    <div className="text-base font-black tracking-tight">
+                    <div className="text-base sm:text-lg font-black tracking-tight">
                       {currentCategory.classification}
                     </div>
                   </div>
                 </div>
-                <div className="bg-white/90 dark:bg-black/40 px-3 py-1 rounded-xl border border-black/10 dark:border-white/10 text-right">
-                  <div className="text-[9.5px] font-bold opacity-75">IMC do Aluno</div>
-                  <div className="text-base font-mono font-black">
+                <div className="bg-white/90 dark:bg-black/40 px-3.5 py-1.5 rounded-xl border border-black/10 dark:border-white/10 text-right">
+                  <div className="text-xs font-bold opacity-75">IMC do Aluno</div>
+                  <div className="text-base sm:text-lg font-mono font-black">
                     {calculatedBMI} <span className="text-xs font-normal">kg/m²</span>
                   </div>
                 </div>
               </div>
-              <p className="text-xs leading-relaxed opacity-95">
+              <p className="text-xs sm:text-sm leading-relaxed opacity-95">
                 {currentCategory.explanation}
               </p>
             </div>
@@ -452,21 +458,21 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
               <MinistryOfHealthTable currentCategoryId={currentCategory.id} />
 
               {/* Formula Step-by-Step Educational Box */}
-              <div className="p-3 bg-white dark:bg-[#132240] border border-slate-200 dark:border-blue-800/80 rounded-2xl shadow-2xs space-y-1.5">
-                <div className="text-[11px] font-black uppercase text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <div className="p-3.5 bg-white dark:bg-[#132240] border border-slate-200 dark:border-blue-800/80 rounded-2xl shadow-2xs space-y-2">
+                <div className="text-xs sm:text-sm font-black uppercase text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   <span>Passo a Passo do Seu Cálculo:</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2 bg-slate-50 dark:bg-blue-950/40 rounded-xl border border-slate-100 dark:border-blue-900/60">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">1. Altura ao Quadrado</span>
-                    <span className="font-mono font-extrabold text-sky-800 dark:text-sky-300">
+                <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
+                  <div className="p-2.5 bg-slate-50 dark:bg-blue-950/40 rounded-xl border border-slate-100 dark:border-blue-900/60">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 block font-bold">1. Altura ao Quadrado</span>
+                    <span className="font-mono font-extrabold text-sky-800 dark:text-sky-300 text-xs sm:text-sm">
                       {heightM.toFixed(2)} × {heightM.toFixed(2)} = {heightSquared} m²
                     </span>
                   </div>
-                  <div className="p-2 bg-slate-50 dark:bg-blue-950/40 rounded-xl border border-slate-100 dark:border-blue-900/60">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-bold">2. Divisão da Massa</span>
-                    <span className="font-mono font-extrabold text-emerald-800 dark:text-emerald-300">
+                  <div className="p-2.5 bg-slate-50 dark:bg-blue-950/40 rounded-xl border border-slate-100 dark:border-blue-900/60">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 block font-bold">2. Divisão da Massa</span>
+                    <span className="font-mono font-extrabold text-emerald-800 dark:text-emerald-300 text-xs sm:text-sm">
                       {massKg} ÷ {heightSquared} = {calculatedBMI}
                     </span>
                   </div>
@@ -549,27 +555,27 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
               </div>
 
               {/* Student Classification Banner in Modal */}
-              <div className={`p-3.5 rounded-2xl border-2 shadow-xs ${currentCategory.badgeBg}`}>
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{currentCategory.icon}</span>
+              <div className={`p-4 rounded-2xl border-2 shadow-xs ${currentCategory.badgeBg}`}>
+                <div className="flex items-center justify-between gap-2.5 mb-1.5">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-3xl">{currentCategory.icon}</span>
                     <div>
-                      <div className="text-[10px] font-black uppercase tracking-wider opacity-80">
+                      <div className="text-xs font-black uppercase tracking-wider opacity-80">
                         Classificação do Aluno
                       </div>
-                      <div className="text-base font-black">
+                      <div className="text-base sm:text-lg font-black">
                         {currentCategory.classification}
                       </div>
                     </div>
                   </div>
-                  <div className="bg-white/90 dark:bg-black/40 px-3 py-1 rounded-xl text-right">
-                    <div className="text-[9.5px] font-bold opacity-75">IMC Calculado</div>
-                    <div className="text-base font-mono font-black">
+                  <div className="bg-white/90 dark:bg-black/40 px-3.5 py-1.5 rounded-xl text-right">
+                    <div className="text-xs font-bold opacity-75">IMC Calculado</div>
+                    <div className="text-base sm:text-lg font-mono font-black">
                       {calculatedBMI} kg/m²
                     </div>
                   </div>
                 </div>
-                <p className="text-xs leading-relaxed opacity-95">
+                <p className="text-xs sm:text-sm leading-relaxed opacity-95">
                   {currentCategory.explanation}
                 </p>
               </div>

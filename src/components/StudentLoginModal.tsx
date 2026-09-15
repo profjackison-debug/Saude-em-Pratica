@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { X, User, Check, Sparkles, BookOpen, GraduationCap, ArrowRight, UserPlus, Users } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { X, User, Check, Sparkles, BookOpen, GraduationCap, ArrowRight, UserPlus, Users, LogOut } from 'lucide-react';
 import { StudentProfile } from '../types';
 import { STUDENT_AVATARS, GRADE_OPTIONS, loadSavedStudentsList, saveStoredStudent } from '../data/rankData';
 import { playClickSound, playStarSound, playFanfare } from '../utils/audio';
 
 interface StudentLoginModalProps {
-  currentStudent: StudentProfile;
+  currentStudent: StudentProfile | null;
   isOpen: boolean;
   onClose: () => void;
   onLoginStudent: (student: StudentProfile) => void;
+  onLogout?: () => void;
 }
 
 export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
@@ -16,19 +17,21 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
   isOpen,
   onClose,
   onLoginStudent,
+  onLogout,
 }) => {
-  const savedStudents = loadSavedStudentsList();
+  const savedStudents = useMemo(() => loadSavedStudentsList(), [isOpen]);
 
   const [activeTab, setActiveTab] = useState<'create' | 'saved'>(
-    savedStudents.length > 1 ? 'saved' : 'create'
+    savedStudents.length > 0 ? 'saved' : 'create'
   );
+  const [formMode, setFormMode] = useState<'new' | 'edit'>(currentStudent ? 'edit' : 'new');
 
-  const [name, setName] = useState(currentStudent.name || '');
+  const [name, setName] = useState(currentStudent?.name || '');
   const [selectedAvatarId, setSelectedAvatarId] = useState<string>(
-    STUDENT_AVATARS.find((a) => a.emoji === currentStudent.avatarEmoji)?.id || STUDENT_AVATARS[0].id
+    STUDENT_AVATARS.find((a) => a.emoji === currentStudent?.avatarEmoji)?.id ?? STUDENT_AVATARS[0]?.id ?? 'student_1'
   );
-  const [grade, setGrade] = useState<string>(currentStudent.grade || GRADE_OPTIONS[0]);
-  const [school, setSchool] = useState<string>(currentStudent.school || 'CETi Central');
+  const [grade, setGrade] = useState<string>(currentStudent?.grade || GRADE_OPTIONS[0] || '6° Ano');
+  const [school, setSchool] = useState<string>(currentStudent?.school || 'CETi Agostinho Ernesto de Almeida');
   const [errorMessage, setErrorMessage] = useState('');
 
   if (!isOpen) return null;
@@ -41,28 +44,32 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
 
   const handleCreateOrUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
+    const cleanName = name.trim().slice(0, 40);
+    if (!cleanName) {
       setErrorMessage('Por favor, digite seu nome ou apelido de estudante!');
       return;
     }
 
-    const selectedAvatar = STUDENT_AVATARS.find((a) => a.id === selectedAvatarId) || STUDENT_AVATARS[0];
+    const selectedAvatar = STUDENT_AVATARS.find((a) => a.id === selectedAvatarId) ?? STUDENT_AVATARS[0];
+    if (!selectedAvatar) return;
+
+    const isEditing = formMode === 'edit' && Boolean(currentStudent);
 
     const newProfile: StudentProfile = {
-      id: currentStudent.id && currentStudent.id !== 'student_default_1'
+      id: isEditing && currentStudent?.id
         ? currentStudent.id
-        : `student_${Date.now()}`,
-      name: name.trim(),
+        : `student_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      name: cleanName,
       grade,
-      school: school.trim() || 'CETi Central',
+      school: school.trim().slice(0, 50) || 'CETi Agostinho Ernesto de Almeida',
       avatarEmoji: selectedAvatar.emoji,
       avatarBg: selectedAvatar.bgColor,
-      starsCount: currentStudent.starsCount || 12,
-      score: currentStudent.score || (currentStudent.starsCount ? currentStudent.starsCount * 100 : 1200),
-      completedMissions: currentStudent.completedMissions || 3,
-      platesBalanced: currentStudent.platesBalanced || 4,
-      activeMinutesTotal: currentStudent.activeMinutesTotal || 280,
-      joinedAt: currentStudent.joinedAt || 'Hoje',
+      starsCount: isEditing ? (currentStudent?.starsCount || 0) : 0,
+      score: isEditing ? (currentStudent?.score || 0) : 0,
+      completedMissions: isEditing ? (currentStudent?.completedMissions || 0) : 0,
+      platesBalanced: isEditing ? (currentStudent?.platesBalanced || 0) : 0,
+      activeMinutesTotal: isEditing ? (currentStudent?.activeMinutesTotal || 0) : 0,
+      joinedAt: isEditing ? (currentStudent?.joinedAt || 'Hoje') : 'Hoje',
     };
 
     playFanfare();
@@ -149,7 +156,7 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
 
               <div className="grid grid-cols-1 gap-2">
                 {savedStudents.map((student) => {
-                  const isCurrent = student.id === currentStudent.id;
+                  const isCurrent = currentStudent ? student.id === currentStudent.id : false;
                   return (
                     <div
                       key={student.id}
@@ -178,7 +185,7 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
                             )}
                           </div>
                           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                            {student.grade} • {student.school || 'CETi Central'}
+                            {student.grade} • {student.school || 'CETi Agostinho Ernesto de Almeida'}
                           </p>
                         </div>
                       </div>
@@ -200,6 +207,8 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
                 onClick={() => {
                   playClickSound();
                   setName('');
+                  setFormMode('new');
+                  setSelectedAvatarId(STUDENT_AVATARS[0]?.id ?? 'student_1');
                   setActiveTab('create');
                 }}
                 className="w-full mt-2 py-2.5 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-800 dark:text-blue-200 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition cursor-pointer"
@@ -207,9 +216,66 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
                 <UserPlus className="w-4 h-4" />
                 <span>Cadastrar Outro Estudante</span>
               </button>
+
+              {currentStudent && onLogout && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    playClickSound();
+                    onLogout();
+                    onClose();
+                  }}
+                  className="w-full mt-1.5 py-2.5 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-2xl text-xs font-black flex items-center justify-center gap-1.5 transition cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sair da Conta Atual ({currentStudent.name})</span>
+                </button>
+              )}
             </div>
           ) : (
             <form onSubmit={handleCreateOrUpdate} className="space-y-4">
+              {/* Form mode selector if a student is already logged in */}
+              {currentStudent && (
+                <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-blue-950/70 rounded-2xl border border-slate-200 dark:border-blue-900">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      setFormMode('edit');
+                      setName(currentStudent.name);
+                      setSelectedAvatarId(
+                        STUDENT_AVATARS.find((a) => a.emoji === currentStudent.avatarEmoji)?.id ?? STUDENT_AVATARS[0]?.id ?? 'student_1'
+                      );
+                      setGrade(currentStudent.grade);
+                      setSchool(currentStudent.school || 'CETi Agostinho Ernesto de Almeida');
+                    }}
+                    className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition cursor-pointer flex items-center justify-center gap-1 ${
+                      formMode === 'edit'
+                        ? 'bg-white dark:bg-[#132240] text-blue-800 dark:text-blue-200 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span>✏️ Editar Meu Perfil</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playClickSound();
+                      setFormMode('new');
+                      setName('');
+                      setSelectedAvatarId(STUDENT_AVATARS[0]?.id ?? 'student_1');
+                    }}
+                    className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-black transition cursor-pointer flex items-center justify-center gap-1 ${
+                      formMode === 'new'
+                        ? 'bg-white dark:bg-[#132240] text-blue-800 dark:text-blue-200 shadow-xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span>➕ Novo Cadastro</span>
+                  </button>
+                </div>
+              )}
+
               {/* Avatar Picker */}
               <div>
                 <label className="block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
@@ -261,8 +327,9 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
                   required
                   placeholder="Ex.: Lucas Rocha, Ana Clara..."
                   value={name}
+                  maxLength={40}
                   onChange={(e) => {
-                    setName(e.target.value);
+                    setName(e.target.value.slice(0, 40));
                     if (errorMessage) setErrorMessage('');
                   }}
                   className="w-full px-4 py-2.5 rounded-2xl border-2 border-slate-200 dark:border-blue-800 bg-white dark:bg-[#132240] focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm font-bold text-slate-900 dark:text-white transition"
@@ -297,9 +364,10 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
                   </label>
                   <input
                     type="text"
-                    placeholder="CETi Central"
+                    placeholder="CETi Agostinho Ernesto de Almeida"
                     value={school}
-                    onChange={(e) => setSchool(e.target.value)}
+                    maxLength={50}
+                    onChange={(e) => setSchool(e.target.value.slice(0, 50))}
                     className="w-full px-3 py-2.5 rounded-2xl border-2 border-slate-200 dark:border-blue-800 bg-white dark:bg-[#132240] focus:border-blue-500 outline-none text-xs font-bold text-slate-800 dark:text-slate-200"
                   />
                 </div>
@@ -309,7 +377,9 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
               <div className="p-3 bg-blue-50 dark:bg-[#0b162b] border border-blue-200 dark:border-blue-800 rounded-2xl flex items-start gap-2 text-blue-950 dark:text-blue-200 text-xs">
                 <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                 <p className="text-[11.5px] leading-relaxed font-medium">
-                  Seu perfil salvará suas <strong>estrelas acumuladas</strong>, desafios matemáticos concluídos e posição no <strong>Ranking da Turma</strong>!
+                  {formMode === 'edit'
+                    ? 'Ao salvar suas alterações, suas estrelas, missões concluídas e medalhas acumuladas serão preservadas intactas!'
+                    : 'Seu perfil salvará suas estrelas acumuladas, desafios matemáticos concluídos e posição no Ranking da Turma!'}
                 </p>
               </div>
 
@@ -318,7 +388,7 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
                 type="submit"
                 className="w-full game-button-teal text-white font-extrabold text-sm py-3 px-5 rounded-2xl shadow-lg flex items-center justify-center gap-2 cursor-pointer transition"
               >
-                <span>Entrar no Jogo & Salvar Perfil</span>
+                <span>{formMode === 'edit' ? 'Salvar Alterações no Perfil' : 'Cadastrar e Entrar no Jogo'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>

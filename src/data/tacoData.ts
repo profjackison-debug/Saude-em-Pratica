@@ -1276,8 +1276,8 @@ export const INITIAL_BADGES: LearningBadge[] = [
     category: 'investigacao',
     description: 'Explorou proporções nas 4 refeições e testou a variação quadrática do IMC.',
     iconName: 'Search',
-    unlocked: true,
-    progressText: 'Concluído: 4 de 4 proporções testadas',
+    unlocked: false,
+    progressText: 'Bloqueado: Conclua os desafios matemáticos para destravar',
   },
   {
     id: 'badge-colaboracao',
@@ -1285,8 +1285,8 @@ export const INITIAL_BADGES: LearningBadge[] = [
     category: 'colaboracao',
     description: 'Planejou atividades inclusivas envolvendo colegas com diferentes habilidades e adaptações.',
     iconName: 'Users',
-    unlocked: true,
-    progressText: 'Atividades adaptadas registradas',
+    unlocked: false,
+    progressText: 'Bloqueado: Conclua os desafios matemáticos para destravar',
   },
   {
     id: 'badge-participacao',
@@ -1295,7 +1295,7 @@ export const INITIAL_BADGES: LearningBadge[] = [
     description: 'Acompanhou os 7 dias de movimento contínuo e analisou a média diária de minutos.',
     iconName: 'Medal',
     unlocked: false,
-    progressText: '1 desafio restante para destravar',
+    progressText: 'Bloqueado: Conclua os desafios matemáticos para destravar',
   },
 ];
 

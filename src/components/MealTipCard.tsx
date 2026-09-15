@@ -55,7 +55,7 @@ export const MealTipCard: React.FC<MealTipCardProps> = ({ mealId, mealName, item
     return () => clearInterval(interval);
   }, [isVisible, secondsRemaining, mealId]);
 
-  const currentTip: MealEducationalTip = tips[tipIndex % tips.length] || tips[0];
+  const currentTip: MealEducationalTip = tips[tipIndex % tips.length] ?? tips[0]!;
 
   const handleNextTip = () => {
     playClickSound();

@@ -12,61 +12,92 @@ import {
   Target,
   ArrowRight,
   Filter,
+  Search,
+  ArrowUp,
+  Zap,
+  CheckCircle2,
+  ChevronUp,
+  Flame,
+  LogOut,
 } from 'lucide-react';
-import { StudentProfile, RankEntry } from '../types';
-import { INITIAL_PEER_RANKINGS } from '../data/rankData';
+import { StudentProfile, RankEntry, LearningBadge } from '../types';
+import { INITIAL_PEER_RANKINGS, loadSavedStudentsList } from '../data/rankData';
+import { loadBadgesFromStorage } from '../context/GameContext';
 import { playClickSound, playStarSound } from '../utils/audio';
 
 interface RankingSectionProps {
-  currentStudent: StudentProfile;
+  currentStudent: StudentProfile | null;
+  badges?: LearningBadge[];
   onOpenLoginModal: () => void;
   onStartMission: () => void;
+  onLogout?: () => void;
   isFocusedView?: boolean;
   onCloseFocus?: () => void;
 }
 
 export const RankingSection: React.FC<RankingSectionProps> = ({
   currentStudent,
+  badges,
   onOpenLoginModal,
   onStartMission,
+  onLogout,
   isFocusedView = true,
   onCloseFocus,
 }) => {
   const [filterType, setFilterType] = useState<'all' | 'class'>('all');
   const [sortBy, setSortBy] = useState<'stars' | 'score' | 'missions'>('stars');
 
-  // Merge the current student into the rankings
+  // Merge all registered students from storage and the current student
   const combinedRankings = useMemo(() => {
-    const userEntry: RankEntry = {
-      id: currentStudent.id,
-      name: currentStudent.name,
-      grade: currentStudent.grade,
-      school: currentStudent.school || 'CETi Central',
-      avatarEmoji: currentStudent.avatarEmoji,
-      avatarBg: currentStudent.avatarBg,
-      starsCount: currentStudent.starsCount,
-      score: currentStudent.score || currentStudent.starsCount * 100,
-      completedMissions: currentStudent.completedMissions,
-      badgesCount: 4,
-      isCurrentUser: true,
-    };
+    const saved = loadSavedStudentsList();
+    const studentsMap = new Map<string, RankEntry>();
 
-    // Filter peers if user has an existing peer id, replace or append
-    const list = INITIAL_PEER_RANKINGS.filter((p) => p.id !== currentStudent.id);
-    list.push(userEntry);
+    saved.forEach((s) => {
+      const sBadges = loadBadgesFromStorage(s.id);
+      const sBadgesCount = sBadges.filter((b) => b.unlocked).length;
+      studentsMap.set(s.id, {
+        id: s.id,
+        name: s.name,
+        grade: s.grade,
+        school: s.school || 'CETi Agostinho Ernesto de Almeida',
+        avatarEmoji: s.avatarEmoji,
+        avatarBg: s.avatarBg,
+        starsCount: s.starsCount || 0,
+        score: s.score || (s.starsCount || 0) * 100,
+        completedMissions: s.completedMissions || 0,
+        badgesCount: sBadgesCount,
+        isCurrentUser: currentStudent ? s.id === currentStudent.id : false,
+      });
+    });
+
+    if (currentStudent) {
+      const curBadgesCount = badges
+        ? badges.filter((b) => b.unlocked).length
+        : loadBadgesFromStorage(currentStudent.id).filter((b) => b.unlocked).length;
+      studentsMap.set(currentStudent.id, {
+        id: currentStudent.id,
+        name: currentStudent.name,
+        grade: currentStudent.grade,
+        school: currentStudent.school || 'CETi Agostinho Ernesto de Almeida',
+        avatarEmoji: currentStudent.avatarEmoji,
+        avatarBg: currentStudent.avatarBg,
+        starsCount: currentStudent.starsCount || 0,
+        score: currentStudent.score || (currentStudent.starsCount || 0) * 100,
+        completedMissions: currentStudent.completedMissions || 0,
+        badgesCount: curBadgesCount,
+        isCurrentUser: true,
+      });
+    }
+
+    let list = Array.from(studentsMap.values());
 
     // Apply class filter if selected
-    let filtered = list;
-    if (filterType === 'class') {
-      filtered = list.filter((item) => item.grade === currentStudent.grade);
-      // Ensure at least 3 entries in class for nice podium
-      if (filtered.length < 3) {
-        filtered = list;
-      }
+    if (filterType === 'class' && currentStudent) {
+      list = list.filter((item) => item.grade === currentStudent.grade);
     }
 
     // Sort entries
-    return filtered.sort((a, b) => {
+    return list.sort((a, b) => {
       if (sortBy === 'stars') {
         return b.starsCount - a.starsCount || b.score - a.score;
       }
@@ -75,7 +106,7 @@ export const RankingSection: React.FC<RankingSectionProps> = ({
       }
       return b.score - a.score || b.starsCount - a.starsCount;
     });
-  }, [currentStudent, filterType, sortBy]);
+  }, [currentStudent, filterType, sortBy, badges]);
 
   // Find user rank
   const currentUserIndex = combinedRankings.findIndex((r) => r.isCurrentUser);
@@ -88,7 +119,7 @@ export const RankingSection: React.FC<RankingSectionProps> = ({
 
   // Difference to next position
   const nextAboveStudent = currentUserIndex > 0 ? combinedRankings[currentUserIndex - 1] : null;
-  const starsToSurpass = nextAboveStudent ? nextAboveStudent.starsCount - currentStudent.starsCount + 1 : 0;
+  const starsToSurpass = currentStudent && nextAboveStudent ? nextAboveStudent.starsCount - currentStudent.starsCount + 1 : 0;
 
   return (
     <section className="bg-white/95 dark:bg-[#0f1b33]/95 rounded-3xl p-4 sm:p-6 border-2 border-teal-200/90 dark:border-blue-800 shadow-lg shadow-teal-900/5 dark:shadow-black/40 max-w-5xl mx-auto w-full relative overflow-hidden animate-in fade-in duration-200 transition-colors">
@@ -112,17 +143,46 @@ export const RankingSection: React.FC<RankingSectionProps> = ({
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-          <button
-            onClick={() => {
-              playClickSound();
-              onOpenLoginModal();
-            }}
-            className="flex items-center gap-1.5 text-xs font-bold text-teal-800 dark:text-blue-200 bg-teal-50 dark:bg-blue-950/60 hover:bg-teal-100 dark:hover:bg-blue-900/60 px-3 py-1.5 rounded-xl border border-teal-200 dark:border-blue-800 transition cursor-pointer"
-            title="Trocar de estudante ou editar perfil"
-          >
-            <User className="w-3.5 h-3.5" />
-            <span>Perfil: <strong>{currentStudent.name}</strong></span>
-          </button>
+          {currentStudent ? (
+            <>
+              <button
+                onClick={() => {
+                  playClickSound();
+                  onOpenLoginModal();
+                }}
+                className="flex items-center gap-1.5 text-xs font-bold text-teal-800 dark:text-blue-200 bg-teal-50 dark:bg-blue-950/60 hover:bg-teal-100 dark:hover:bg-blue-900/60 px-3 py-1.5 rounded-xl border border-teal-200 dark:border-blue-800 transition cursor-pointer"
+                title="Trocar de estudante ou editar perfil"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>Perfil: <strong>{currentStudent.name}</strong></span>
+              </button>
+
+              {onLogout && (
+                <button
+                  onClick={() => {
+                    playClickSound();
+                    onLogout();
+                  }}
+                  className="flex items-center gap-1 text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-800 transition cursor-pointer"
+                  title={`Sair da conta de ${currentStudent.name}`}
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Sair</span>
+                </button>
+              )}
+            </>
+          ) : (
+            <button
+              onClick={() => {
+                playClickSound();
+                onOpenLoginModal();
+              }}
+              className="game-button-teal text-white font-extrabold text-xs px-3.5 py-1.5 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Entrar como Aluno</span>
+            </button>
+          )}
 
           {isFocusedView && onCloseFocus && (
             <button
@@ -135,164 +195,240 @@ export const RankingSection: React.FC<RankingSectionProps> = ({
         </div>
       </div>
 
-      {/* User Current Position Highlight Bar */}
-      <div className="my-4 p-4 rounded-2xl bg-gradient-to-r from-blue-800 via-blue-900 to-indigo-900 dark:from-blue-950 dark:via-[#0c1a36] dark:to-indigo-950 text-white shadow-md border border-blue-700/50 dark:border-blue-800 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="relative">
-            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${currentStudent.avatarBg} p-0.5 shadow-md flex items-center justify-center text-2xl`}>
-              {currentStudent.avatarEmoji}
+      {/* User Current Position Highlight Bar or Guest Banner */}
+      {currentStudent ? (
+        <div className="my-4 p-4 rounded-2xl bg-gradient-to-r from-blue-800 via-blue-900 to-indigo-900 dark:from-blue-950 dark:via-[#0c1a36] dark:to-indigo-950 text-white shadow-md border border-blue-700/50 dark:border-blue-800 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="relative">
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${currentStudent.avatarBg} p-0.5 shadow-md flex items-center justify-center text-2xl`}>
+                {currentStudent.avatarEmoji}
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-400 border-2 border-white dark:border-slate-900 text-amber-950 flex items-center justify-center font-black text-xs shadow-xs">
+                #{userRankPosition}
+              </div>
             </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-400 border-2 border-white dark:border-slate-900 text-amber-950 flex items-center justify-center font-black text-xs shadow-xs">
-              #{userRankPosition}
+
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-base sm:text-lg font-black">{currentStudent.name}</span>
+                <span className="text-[10px] font-black bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Seu Perfil
+                </span>
+              </div>
+              <p className="text-xs text-teal-200 font-medium">
+                {currentStudent.grade} • {currentStudent.school || 'CETi Agostinho Ernesto de Almeida'}
+              </p>
             </div>
           </div>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-base sm:text-lg font-black">{currentStudent.name}</span>
-              <span className="text-[10px] font-black bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Seu Perfil
+          {/* Stats & Encouragement */}
+          <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-end">
+            <div className="text-center px-3 py-1.5 bg-white/10 rounded-xl border border-white/10">
+              <span className="text-xs text-teal-200 block">Posição</span>
+              <span className="text-lg font-black text-amber-300 font-mono">
+                {userRankPosition}º Lugar
               </span>
             </div>
-            <p className="text-xs text-teal-200 font-medium">
-              {currentStudent.grade} • {currentStudent.school || 'CETi Central'}
-            </p>
+
+            <div className="text-center px-3 py-1.5 bg-white/10 rounded-xl border border-white/10">
+              <span className="text-xs text-teal-200 block">Estrelas</span>
+              <span className="text-lg font-black text-white font-mono flex items-center gap-1 justify-center">
+                <Star className="w-4 h-4 fill-amber-400 text-amber-400 inline" />
+                {currentStudent.starsCount}
+              </span>
+            </div>
+
+            <div className="text-center px-3 py-1.5 bg-white/10 rounded-xl border border-white/10">
+              <span className="text-xs text-teal-200 block">Pontos XP</span>
+              <span className="text-lg font-black text-emerald-300 font-mono">
+                {currentStudent.score || currentStudent.starsCount * 100}
+              </span>
+            </div>
+
+            <button
+              onClick={() => {
+                playStarSound();
+                onStartMission();
+              }}
+              className="game-button-teal text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              title="Ganhe mais estrelas para subir no ranking"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>
+                {starsToSurpass > 0
+                  ? `+${starsToSurpass} ⭐ p/ subir!`
+                  : 'Conquistar Estrelas'}
+              </span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
-
-        {/* Stats & Encouragement */}
-        <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-end">
-          <div className="text-center px-3 py-1.5 bg-white/10 rounded-xl border border-white/10">
-            <span className="text-xs text-teal-200 block">Posição</span>
-            <span className="text-lg font-black text-amber-300 font-mono">
-              {userRankPosition}º Lugar
-            </span>
+      ) : (
+        <div className="my-4 p-4 rounded-2xl bg-gradient-to-r from-blue-900/30 via-teal-900/20 to-blue-900/30 border-2 border-teal-300/60 dark:border-blue-700/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-800 dark:text-slate-100 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-teal-100 dark:bg-blue-950 text-teal-800 dark:text-blue-200 flex items-center justify-center text-2xl shadow-xs">
+              🧑‍🎓
+            </div>
+            <div>
+              <h4 className="font-black text-sm text-slate-900 dark:text-white">
+                Você está navegando como visitante
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Faça login ou cadastre-se para registrar suas estrelas e disputar o ranking da turma!
+              </p>
+            </div>
           </div>
-
-          <div className="text-center px-3 py-1.5 bg-white/10 rounded-xl border border-white/10">
-            <span className="text-xs text-teal-200 block">Estrelas</span>
-            <span className="text-lg font-black text-white font-mono flex items-center gap-1 justify-center">
-              <Star className="w-4 h-4 fill-amber-400 text-amber-400 inline" />
-              {currentStudent.starsCount}
-            </span>
-          </div>
-
-          <div className="text-center px-3 py-1.5 bg-white/10 rounded-xl border border-white/10">
-            <span className="text-xs text-teal-200 block">Pontos XP</span>
-            <span className="text-lg font-black text-emerald-300 font-mono">
-              {currentStudent.score || currentStudent.starsCount * 100}
-            </span>
-          </div>
-
           <button
             onClick={() => {
-              playStarSound();
-              onStartMission();
+              playClickSound();
+              onOpenLoginModal();
             }}
-            className="game-button-teal text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
-            title="Ganhe mais estrelas para subir no ranking"
+            className="game-button-teal text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-md cursor-pointer shrink-0 flex items-center gap-1.5"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>
-              {starsToSurpass > 0
-                ? `+${starsToSurpass} ⭐ p/ subir!`
-                : 'Conquistar Estrelas'}
-            </span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <User className="w-4 h-4" />
+            <span>Entrar como Aluno</span>
           </button>
         </div>
-      </div>
+      )}
 
       {/* Podium of Top 3 Champions */}
-      <div className="my-5 p-4 sm:p-5 bg-gradient-to-b from-sky-50/80 to-teal-50/50 dark:from-[#0d1b34] dark:to-[#071120] rounded-3xl border border-teal-100 dark:border-blue-900/80 shadow-inner">
-        <h3 className="text-center text-xs font-black text-teal-900 dark:text-blue-200 uppercase tracking-wider mb-4 flex items-center justify-center gap-1.5">
-          <Crown className="w-4 h-4 text-amber-500" />
-          <span>Pódio de Destaque da Escola</span>
-        </h3>
-
-        <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-lg mx-auto items-end pt-3">
-          {/* 2nd Place (Silver) */}
-          {top2 && (
-            <div className="flex flex-col items-center text-center">
-              <div className="relative mb-1">
-                <div className={`w-12 sm:w-14 h-12 sm:h-14 rounded-2xl bg-gradient-to-tr ${top2.avatarBg} p-0.5 shadow-md flex items-center justify-center text-xl sm:text-2xl`}>
-                  {top2.avatarEmoji}
-                </div>
-                <div className="absolute -top-2 -right-1 w-5 h-5 rounded-full bg-slate-300 dark:bg-slate-500 border-2 border-white dark:border-slate-800 text-slate-800 dark:text-white flex items-center justify-center font-black text-[10px] shadow-xs">
-                  🥈
-                </div>
-              </div>
-              <span className="text-xs font-black text-slate-900 dark:text-slate-100 truncate max-w-[90px] sm:max-w-[120px]">
-                {top2.name}
-              </span>
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{top2.grade}</span>
-              <div className="mt-1 flex items-center gap-1 text-xs font-black text-amber-600 dark:text-amber-400 bg-white dark:bg-[#132240] px-2 py-0.5 rounded-full border border-slate-200 dark:border-blue-800 shadow-xs">
-                <span>⭐</span>
-                <span>{top2.starsCount}</span>
-              </div>
-              {/* Silver Pillar */}
-              <div className="w-full h-16 sm:h-20 mt-2 bg-gradient-to-b from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-t-2xl flex items-center justify-center font-black text-slate-600 dark:text-slate-300 text-lg sm:text-xl shadow-xs">
-                2º
-              </div>
-            </div>
-          )}
-
-          {/* 1st Place (Gold) */}
-          {top1 && (
-            <div className="flex flex-col items-center text-center z-10">
-              <div className="relative mb-1">
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Crown className="w-6 h-6 text-amber-500 fill-amber-400 filter drop-shadow-xs animate-bounce" />
-                </div>
-                <div className={`w-14 sm:w-16 h-14 sm:h-16 rounded-2xl bg-gradient-to-tr ${top1.avatarBg} p-0.5 shadow-lg ring-4 ring-amber-300/60 dark:ring-amber-400/40 flex items-center justify-center text-2xl sm:text-3xl`}>
-                  {top1.avatarEmoji}
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-400 border-2 border-white dark:border-slate-900 text-amber-950 flex items-center justify-center font-black text-xs shadow-xs">
-                  🥇
-                </div>
-              </div>
-              <span className="text-xs sm:text-sm font-black text-slate-950 dark:text-white truncate max-w-[100px] sm:max-w-[130px]">
-                {top1.name}
-              </span>
-              <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400">{top1.grade}</span>
-              <div className="mt-1 flex items-center gap-1 text-xs font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700 px-2.5 py-0.5 rounded-full shadow-xs">
-                <span>⭐</span>
-                <span>{top1.starsCount}</span>
-              </div>
-              {/* Gold Pillar */}
-              <div className="w-full h-24 sm:h-28 mt-2 bg-gradient-to-b from-amber-300 via-amber-400 to-yellow-500 dark:from-amber-600 dark:via-amber-500 dark:to-yellow-600 border-2 border-amber-400 dark:border-amber-500 rounded-t-2xl flex items-center justify-center font-black text-amber-950 text-xl sm:text-2xl shadow-md">
-                1º
-              </div>
-            </div>
-          )}
-
-          {/* 3rd Place (Bronze) */}
-          {top3 && (
-            <div className="flex flex-col items-center text-center">
-              <div className="relative mb-1">
-                <div className={`w-12 sm:w-14 h-12 sm:h-14 rounded-2xl bg-gradient-to-tr ${top3.avatarBg} p-0.5 shadow-md flex items-center justify-center text-xl sm:text-2xl`}>
-                  {top3.avatarEmoji}
-                </div>
-                <div className="absolute -top-2 -right-1 w-5 h-5 rounded-full bg-amber-600 border-2 border-white dark:border-slate-800 text-white flex items-center justify-center font-black text-[10px] shadow-xs">
-                  🥉
-                </div>
-              </div>
-              <span className="text-xs font-black text-slate-900 dark:text-slate-100 truncate max-w-[90px] sm:max-w-[120px]">
-                {top3.name}
-              </span>
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{top3.grade}</span>
-              <div className="mt-1 flex items-center gap-1 text-xs font-black text-amber-600 dark:text-amber-400 bg-white dark:bg-[#132240] px-2 py-0.5 rounded-full border border-slate-200 dark:border-blue-800 shadow-xs">
-                <span>⭐</span>
-                <span>{top3.starsCount}</span>
-              </div>
-              {/* Bronze Pillar */}
-              <div className="w-full h-12 sm:h-16 mt-2 bg-gradient-to-b from-amber-600/80 to-amber-700 dark:from-amber-800 dark:to-amber-900 border-2 border-amber-700/80 dark:border-amber-800 rounded-t-2xl flex items-center justify-center font-black text-white text-base sm:text-lg shadow-xs">
-                3º
-              </div>
-            </div>
+      {combinedRankings.length === 0 ? (
+        <div className="my-5 p-6 sm:p-8 bg-gradient-to-b from-sky-50/70 to-teal-50/40 dark:from-[#0d1b34] dark:to-[#071120] rounded-3xl border border-dashed border-teal-200 dark:border-blue-800/80 text-center flex flex-col items-center justify-center gap-3 shadow-inner">
+          <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-3xl shadow-xs">
+            🏆
+          </div>
+          <div className="max-w-md">
+            <h3 className="text-sm sm:text-base font-black text-slate-800 dark:text-slate-100">
+              Ranking pronto para o início!
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Ainda não há estudantes registrados no ranking. Conecte seu perfil ou cadastre-se para pontuar resolvendo desafios e assumir a liderança!
+            </p>
+          </div>
+          {!currentStudent && (
+            <button
+              onClick={() => {
+                playClickSound();
+                onOpenLoginModal();
+              }}
+              className="game-button-teal text-white font-extrabold text-xs px-4 py-2 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer mt-1"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Cadastrar Primeiro Estudante</span>
+            </button>
           )}
         </div>
-      </div>
+      ) : (
+        <div className="my-5 p-4 sm:p-5 bg-gradient-to-b from-sky-50/80 to-teal-50/50 dark:from-[#0d1b34] dark:to-[#071120] rounded-3xl border border-teal-100 dark:border-blue-900/80 shadow-inner">
+          <h3 className="text-center text-xs font-black text-teal-900 dark:text-blue-200 uppercase tracking-wider mb-4 flex items-center justify-center gap-1.5">
+            <Crown className="w-4 h-4 text-amber-500" />
+            <span>Pódio de Destaque da Escola</span>
+          </h3>
+
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 max-w-lg mx-auto items-end pt-3">
+            {/* 2nd Place (Silver) */}
+            {top2 ? (
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-1">
+                  <div className={`w-12 sm:w-14 h-12 sm:h-14 rounded-2xl bg-gradient-to-tr ${top2.avatarBg} p-0.5 shadow-md flex items-center justify-center text-xl sm:text-2xl`}>
+                    {top2.avatarEmoji}
+                  </div>
+                  <div className="absolute -top-2 -right-1 w-5 h-5 rounded-full bg-slate-300 dark:bg-slate-500 border-2 border-white dark:border-slate-800 text-slate-800 dark:text-white flex items-center justify-center font-black text-[10px] shadow-xs">
+                    🥈
+                  </div>
+                </div>
+                <span className="text-xs font-black text-slate-900 dark:text-slate-100 truncate max-w-[90px] sm:max-w-[120px]">
+                  {top2.name}
+                </span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{top2.grade}</span>
+                <div className="mt-1 flex items-center gap-1 text-xs font-black text-amber-600 dark:text-amber-400 bg-white dark:bg-[#132240] px-2 py-0.5 rounded-full border border-slate-200 dark:border-blue-800 shadow-xs">
+                  <span>⭐</span>
+                  <span>{top2.starsCount}</span>
+                </div>
+                {/* Silver Pillar */}
+                <div className="w-full h-16 sm:h-20 mt-2 bg-gradient-to-b from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-t-2xl flex items-center justify-center font-black text-slate-600 dark:text-slate-300 text-lg sm:text-xl shadow-xs">
+                  2º
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center text-center opacity-40">
+                <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold mb-1 text-sm">
+                  🥈
+                </div>
+                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Vago</span>
+                <div className="w-full h-16 sm:h-20 mt-2 bg-slate-100/60 dark:bg-slate-800/30 border border-dashed border-slate-300 dark:border-slate-700 rounded-t-2xl flex items-center justify-center font-bold text-slate-400 dark:text-slate-600 text-sm">
+                  2º
+                </div>
+              </div>
+            )}
+
+            {/* 1st Place (Gold) */}
+            {top1 && (
+              <div className="flex flex-col items-center text-center z-10">
+                <div className="relative mb-1">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                    <Crown className="w-6 h-6 text-amber-500 fill-amber-400 filter drop-shadow-xs animate-bounce" />
+                  </div>
+                  <div className={`w-14 sm:w-16 h-14 sm:h-16 rounded-2xl bg-gradient-to-tr ${top1.avatarBg} p-0.5 shadow-lg ring-4 ring-amber-300/60 dark:ring-amber-400/40 flex items-center justify-center text-2xl sm:text-3xl`}>
+                    {top1.avatarEmoji}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-400 border-2 border-white dark:border-slate-900 text-amber-950 flex items-center justify-center font-black text-xs shadow-xs">
+                    🥇
+                  </div>
+                </div>
+                <span className="text-xs sm:text-sm font-black text-slate-950 dark:text-white truncate max-w-[100px] sm:max-w-[130px]">
+                  {top1.name}
+                </span>
+                <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400">{top1.grade}</span>
+                <div className="mt-1 flex items-center gap-1 text-xs font-black text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 border border-amber-300 dark:border-amber-700 px-2.5 py-0.5 rounded-full shadow-xs">
+                  <span>⭐</span>
+                  <span>{top1.starsCount}</span>
+                </div>
+                {/* Gold Pillar */}
+                <div className="w-full h-24 sm:h-28 mt-2 bg-gradient-to-b from-amber-300 via-amber-400 to-yellow-500 dark:from-amber-600 dark:via-amber-500 dark:to-yellow-600 border-2 border-amber-400 dark:border-amber-500 rounded-t-2xl flex items-center justify-center font-black text-amber-950 text-xl sm:text-2xl shadow-md">
+                  1º
+                </div>
+              </div>
+            )}
+
+            {/* 3rd Place (Bronze) */}
+            {top3 ? (
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-1">
+                  <div className={`w-12 sm:w-14 h-12 sm:h-14 rounded-2xl bg-gradient-to-tr ${top3.avatarBg} p-0.5 shadow-md flex items-center justify-center text-xl sm:text-2xl`}>
+                    {top3.avatarEmoji}
+                  </div>
+                  <div className="absolute -top-2 -right-1 w-5 h-5 rounded-full bg-amber-600 border-2 border-white dark:border-slate-800 text-white flex items-center justify-center font-black text-[10px] shadow-xs">
+                    🥉
+                  </div>
+                </div>
+                <span className="text-xs font-black text-slate-900 dark:text-slate-100 truncate max-w-[90px] sm:max-w-[120px]">
+                  {top3.name}
+                </span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">{top3.grade}</span>
+                <div className="mt-1 flex items-center gap-1 text-xs font-black text-amber-600 dark:text-amber-400 bg-white dark:bg-[#132240] px-2 py-0.5 rounded-full border border-slate-200 dark:border-blue-800 shadow-xs">
+                  <span>⭐</span>
+                  <span>{top3.starsCount}</span>
+                </div>
+                {/* Bronze Pillar */}
+                <div className="w-full h-12 sm:h-16 mt-2 bg-gradient-to-b from-amber-600/80 to-amber-700 dark:from-amber-800 dark:to-amber-900 border-2 border-amber-700/80 dark:border-amber-800 rounded-t-2xl flex items-center justify-center font-black text-white text-base sm:text-lg shadow-xs">
+                  3º
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center text-center opacity-40">
+                <div className="w-12 sm:w-14 h-12 sm:h-14 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold mb-1 text-sm">
+                  🥉
+                </div>
+                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Vago</span>
+                <div className="w-full h-12 sm:h-16 mt-2 bg-slate-100/60 dark:bg-slate-800/30 border border-dashed border-slate-300 dark:border-slate-700 rounded-t-2xl flex items-center justify-center font-bold text-slate-400 dark:text-slate-600 text-sm">
+                  3º
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Filter & Sorting Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-3">
@@ -316,6 +452,10 @@ export const RankingSection: React.FC<RankingSectionProps> = ({
           <button
             onClick={() => {
               playClickSound();
+              if (!currentStudent) {
+                onOpenLoginModal();
+                return;
+              }
               setFilterType('class');
             }}
             className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 ${
@@ -325,7 +465,7 @@ export const RankingSection: React.FC<RankingSectionProps> = ({
             }`}
           >
             <User className="w-3.5 h-3.5" />
-            <span>Minha Turma ({currentStudent.grade})</span>
+            <span>Minha Turma {currentStudent?.grade ? `(${currentStudent.grade})` : ''}</span>
           </button>
         </div>
 
@@ -362,13 +502,23 @@ export const RankingSection: React.FC<RankingSectionProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-blue-950/80 text-xs">
-              {combinedRankings.map((entry, idx) => {
-                const position = idx + 1;
-                const isCurrent = entry.isCurrentUser;
+              {combinedRankings.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 px-4 text-center text-slate-500 dark:text-slate-400">
+                    <p className="font-bold text-xs">Nenhum estudante no ranking da tabela.</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                      Conforme novos alunos se cadastrarem e resolverem desafios, a classificação será exibida aqui em tempo real.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                combinedRankings.map((entry, idx) => {
+                  const position = idx + 1;
+                  const isCurrent = entry.isCurrentUser;
 
-                return (
-                  <tr
-                    key={entry.id}
+                  return (
+                    <tr
+                      key={entry.id}
                     className={`transition ${
                       isCurrent
                         ? 'bg-blue-50/90 dark:bg-blue-950/60 font-black border-l-4 border-l-blue-600 dark:border-l-blue-400 ring-1 ring-blue-300 dark:ring-blue-700'
@@ -416,7 +566,7 @@ export const RankingSection: React.FC<RankingSectionProps> = ({
                             )}
                           </div>
                           <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
-                            {entry.school || 'CETi Central'}
+                            {entry.school || 'CETi Agostinho Ernesto de Almeida'}
                           </span>
                         </div>
                       </div>
@@ -448,8 +598,9 @@ export const RankingSection: React.FC<RankingSectionProps> = ({
                       {entry.score} XP
                     </td>
                   </tr>
-                );
-              })}
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

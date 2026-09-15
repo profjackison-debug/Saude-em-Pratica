@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Volume2, VolumeX, Camera, User, Sparkles, Award, Trophy, UserCheck, Moon, Sun } from 'lucide-react';
+import { X, Volume2, VolumeX, Camera, User, Sparkles, Award, Trophy, UserCheck, Moon, Sun, LogOut } from 'lucide-react';
 import { playClickSound, playStarSound } from '../utils/audio';
 import { StudentProfile } from '../types';
 
@@ -9,9 +9,10 @@ interface SettingsModalProps {
   onToggleMute: () => void;
   onOpenExportModal: () => void;
   starsCount: number;
-  currentStudent?: StudentProfile;
+  currentStudent?: StudentProfile | null;
   onOpenLoginModal?: () => void;
   onOpenRank?: () => void;
+  onLogout?: () => void;
   theme?: 'light' | 'dark';
   onToggleTheme?: () => void;
 }
@@ -25,6 +26,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   currentStudent,
   onOpenLoginModal,
   onOpenRank,
+  onLogout,
   theme = 'light',
   onToggleTheme,
 }) => {
@@ -55,7 +57,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Content */}
         <div className="p-5 space-y-4 text-slate-800 dark:text-slate-100">
-          {/* Avatar card with Edit/Switch button */}
+          {/* Avatar card with Edit/Switch and Logout button */}
           <div className="p-4 bg-teal-50/70 dark:bg-[#132240] border border-teal-200 dark:border-blue-700/80 rounded-2xl flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${currentStudent?.avatarBg || 'from-teal-500 to-sky-400'} p-0.5 shadow-md flex items-center justify-center text-2xl`}>
@@ -63,10 +65,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
               <div>
                 <h4 className="text-base font-black text-teal-950 dark:text-blue-100">
-                  {currentStudent?.name || 'Estudante Explorador'}
+                  {currentStudent ? currentStudent.name : 'Nenhum Aluno Conectado'}
                 </h4>
                 <p className="text-xs text-teal-700 dark:text-blue-300 font-medium">
-                  {currentStudent?.grade || '8º Ano A'} • {currentStudent?.school || 'CETi Central'}
+                  {currentStudent ? `${currentStudent.grade} • ${currentStudent.school || 'CETi Agostinho Ernesto de Almeida'}` : 'Conecte-se para salvar progresso'}
                 </p>
                 <div className="mt-1 flex items-center gap-2 text-xs font-bold text-amber-700 dark:text-amber-400">
                   <Sparkles className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
@@ -75,20 +77,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
 
-            {onOpenLoginModal && (
-              <button
-                onClick={() => {
-                  playClickSound();
-                  onClose();
-                  onOpenLoginModal();
-                }}
-                className="p-2 rounded-xl bg-white dark:bg-[#1b2f56] hover:bg-teal-100 dark:hover:bg-blue-900/50 text-teal-800 dark:text-blue-200 border border-teal-300 dark:border-blue-600 text-xs font-bold transition cursor-pointer flex flex-col items-center gap-0.5"
-                title="Trocar de estudante ou editar perfil"
-              >
-                <UserCheck className="w-4 h-4" />
-                <span className="text-[10px]">Trocar</span>
-              </button>
-            )}
+            <div className="flex items-center gap-1.5">
+              {onOpenLoginModal && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    playClickSound();
+                    onClose();
+                    onOpenLoginModal();
+                  }}
+                  className="p-2 rounded-xl bg-white dark:bg-[#1b2f56] hover:bg-teal-100 dark:hover:bg-blue-900/50 text-teal-800 dark:text-blue-200 border border-teal-300 dark:border-blue-600 text-xs font-bold transition cursor-pointer flex flex-col items-center gap-0.5"
+                  title={currentStudent ? 'Trocar de estudante ou editar perfil' : 'Fazer login / Cadastrar'}
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span className="text-[10px]">{currentStudent ? 'Trocar' : 'Entrar'}</span>
+                </button>
+              )}
+
+              {currentStudent && onLogout && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    playClickSound();
+                    onClose();
+                    onLogout();
+                  }}
+                  className="p-2 rounded-xl bg-white dark:bg-[#1b2f56] hover:bg-rose-50 dark:hover:bg-rose-950/50 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 text-xs font-bold transition cursor-pointer flex flex-col items-center gap-0.5"
+                  title="Sair da conta de estudante"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="text-[10px]">Sair</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Direct Ranking Shortcut */}

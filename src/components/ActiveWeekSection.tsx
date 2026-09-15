@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Activity, Clock, Dumbbell, Check, Plus, X } from 'lucide-react';
-import { ActiveYouthIllustration } from './Illustrations';
+import inclusiveMovementPhoto from '../assets/movimento_inclusivo_jovens.jpg';
 import { playClickSound } from '../utils/audio';
 
 interface ActiveWeekSectionProps {
@@ -168,16 +168,14 @@ export const ActiveWeekSection: React.FC<ActiveWeekSectionProps> = ({
           </div>
         )}
 
-        {/* Diverse Youth Illustration in Park with Wheelchair Racer & Green Sticker */}
-        <div
-          onClick={() => {
-            playClickSound();
-            onChallengeClick();
-          }}
-          className="relative rounded-2xl overflow-hidden border border-slate-200 dark:border-blue-900/80 shadow-xs cursor-pointer group"
-          title="Toque para abrir missões de movimento inclusivo"
-        >
-          <ActiveYouthIllustration />
+        {/* Diverse Inclusive Youth Moving in Park Real Photo */}
+        <div className="relative rounded-2xl overflow-hidden border-2 border-emerald-200/80 dark:border-blue-900/80 shadow-md">
+          <img
+            src={inclusiveMovementPhoto}
+            alt="Jovens brasileiros diversos praticando atividades físicas inclusivas no parque"
+            className="w-full h-48 sm:h-60 md:h-72 object-cover object-[center_40%]"
+            loading="eager"
+          />
         </div>
       </div>
 
