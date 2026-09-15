@@ -145,12 +145,41 @@ export function loadBadgesFromStorage(studentId?: string | null): LearningBadge[
     }
     const key = getBadgesStorageKey(studentId);
     const raw = localStorage.getItem(key);
+    const storedMap: Record<string, boolean> = {};
     if (raw) {
       const parsed: LearningBadge[] = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        parsed.forEach((b) => {
+          if (b.unlocked) storedMap[b.id] = true;
+        });
       }
     }
+
+    // Se o estudante tem missões concluídas no solvedStorage, garantir que as medalhas daquela missão estão desbloqueadas
+    const solvedChallenges = loadSolvedFromStorage(studentId);
+    if (solvedChallenges.includes('chal-1')) {
+      storedMap['badge-investigacao'] = true;
+      storedMap['badge-prato-verde'] = true;
+      storedMap['badge-regra-tres'] = true;
+      storedMap['badge-nutri-energia'] = true;
+    }
+    if (solvedChallenges.includes('chal-2')) {
+      storedMap['badge-grandezas-imc'] = true;
+      storedMap['badge-potenciacao'] = true;
+      storedMap['badge-divisao-decimal'] = true;
+      storedMap['badge-colaboracao'] = true;
+    }
+    if (solvedChallenges.includes('chal-3')) {
+      storedMap['badge-participacao'] = true;
+      storedMap['badge-estrategista-movimento'] = true;
+      storedMap['badge-tempo-ativo'] = true;
+      storedMap['badge-constancia-semanal'] = true;
+    }
+
+    return INITIAL_BADGES.map((b) => ({
+      ...b,
+      unlocked: Boolean(storedMap[b.id]),
+    }));
   } catch {
     /* ignore */
   }
@@ -197,6 +226,8 @@ function saveJson(key: string, value: unknown): void {
 // ---------------------------------------------------------------------------
 export interface GameState {
   currentStudent: StudentProfile | null;
+  guestStarsCount: number;
+  solvedQuestionIds: string[];
   mealSlots: Record<MealTimeId, MealSlot>;
   activeMealId: MealTimeId;
   activeScreen: AppScreenId;
@@ -218,6 +249,7 @@ export type GameAction =
   | { type: 'LOAD_MEAL_TEMPLATE'; mealId: MealTimeId; foods: { foodId: string; portions: number }[] }
   | { type: 'SET_ACTIVE_MEAL'; mealId: MealTimeId }
   | { type: 'SET_ACTIVE_SCREEN'; screen: AppScreenId }
+  | { type: 'AWARD_QUESTION_STAR'; questionId: string; badgeId?: string }
   | { type: 'SOLVE_CHALLENGE'; challengeId: string }
   | { type: 'UNLOCK_BADGE'; badgeId: string }
   | { type: 'LOGIN_STUDENT'; student: StudentProfile }
