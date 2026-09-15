@@ -230,6 +230,8 @@ export interface GameState {
   solvedChallengeIds: string[];
   theme: ThemeMode;
   isMuted: boolean;
+  studentMassKg: number;
+  studentHeightM: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -249,7 +251,8 @@ export type GameAction =
   | { type: 'LOGIN_STUDENT'; student: StudentProfile }
   | { type: 'LOGOUT_STUDENT' }
   | { type: 'TOGGLE_THEME' }
-  | { type: 'TOGGLE_MUTE' };
+  | { type: 'TOGGLE_MUTE' }
+  | { type: 'SET_BODY_METRICS'; massKg: number; heightM: number };
 
 // ---------------------------------------------------------------------------
 // Reducer — single source of truth, atomic updates, no race conditions
@@ -460,6 +463,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'TOGGLE_MUTE':
       return { ...state, isMuted: !state.isMuted };
 
+    case 'SET_BODY_METRICS':
+      return {
+        ...state,
+        studentMassKg: action.massKg,
+        studentHeightM: action.heightM,
+      };
+
     default:
       return state;
   }
@@ -473,6 +483,8 @@ function loadInitialState(): GameState {
   const solved = student ? loadSolvedFromStorage(student.id) : [];
   const badges = student ? loadBadgesFromStorage(student.id) : INITIAL_BADGES.map((b) => ({ ...b, unlocked: false }));
   const missionsCount = student ? Math.max(student.completedMissions || 0, solved.length) : 0;
+  const metricsKey = student ? `saude_pratica_metrics_${student.id}` : 'saude_pratica_metrics_guest';
+  const savedMetrics = loadJson<{ massKg: number; heightM: number }>(metricsKey, { massKg: 65, heightM: 1.65 });
 
   return {
     currentStudent: student,
@@ -492,6 +504,8 @@ function loadInitialState(): GameState {
       setAudioMuted(muted);
       return muted;
     })(),
+    studentMassKg: savedMetrics?.massKg ?? 65,
+    studentHeightM: savedMetrics?.heightM ?? 1.65,
   };
 }
 
@@ -525,6 +539,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearStoredStudent();
     }
   }, [state.currentStudent]);
+
+  // Persist body metrics
+  useEffect(() => {
+    const metricsKey = state.currentStudent ? `saude_pratica_metrics_${state.currentStudent.id}` : 'saude_pratica_metrics_guest';
+    saveJson(metricsKey, { massKg: state.studentMassKg, heightM: state.studentHeightM });
+  }, [state.studentMassKg, state.studentHeightM, state.currentStudent?.id]);
 
   // Persist meal slots
   useEffect(() => {

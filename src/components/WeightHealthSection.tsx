@@ -16,6 +16,9 @@ interface WeightHealthSectionProps {
   consumedGrams?: number;
   isQuizSolved?: boolean;
   onNavigateToNext?: () => void;
+  studentMassKg?: number;
+  studentHeightM?: number;
+  onMetricsChange?: (massKg: number, heightM: number) => void;
 }
 
 export interface BmiCategory {
