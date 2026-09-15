@@ -215,7 +215,7 @@ export const DailyBalanceBanner: React.FC<DailyBalanceBannerProps> = ({
             {!allFourMealsCompleted ? (
               <>Monte ao menos 1 alimento em cada refeição (Café, Almoço, Lanche e Jantar) para liberar a missão.</>
             ) : !isMissionSolved ? (
-              <>Aperte no botão ao lado ou em <strong>"Começar missão"</strong> para responder ao quiz e liberar "2. Peso e Saúde"!</>
+              <>Aperte no botão verde <strong>"Começar missão"</strong> abaixo para responder ao quiz e avançar para "2. Peso e Saúde"!</>
             ) : (
               <>Clique no botão ao lado para avançar e investigar o impacto no peso corporal e IMC!</>
             )}
@@ -243,26 +243,18 @@ export const DailyBalanceBanner: React.FC<DailyBalanceBannerProps> = ({
             <ArrowRight className="w-5 h-5" />
           </button>
         ) : allFourMealsCompleted && !isMissionSolved ? (
-          <button
-            onClick={() => {
-              playClickSound();
-              onStartMission?.();
-            }}
-            title="Começar o quiz da missão para desbloquear o passo 2"
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-black text-xs sm:text-sm md:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg shrink-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-emerald-950/20 scale-[1.02] hover:scale-105 border-2 border-white cursor-pointer animate-pulse"
-          >
-            <span>🎯 Jogar Quiz para Liberar Etapa 2</span>
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          <div className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-teal-950/70 border-2 border-teal-500/50 text-teal-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-md shrink-0">
+            <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
+            <span>Aperte em <strong>"Começar missão"</strong> abaixo 👇</span>
+          </div>
         ) : (
-          <button
-            disabled
+          <div
             title={`Bloqueado: Monte as 4 refeições para liberar (${dailyStats.completedCount}/4 concluídas)`}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-black text-xs sm:text-sm md:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg shrink-0 bg-teal-950/50 border-2 border-teal-600/40 text-teal-200/60 cursor-not-allowed opacity-75"
+            className="w-full sm:w-auto px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-xs shrink-0 bg-teal-950/50 border border-teal-600/40 text-teal-200/70"
           >
-            <Lock className="w-4.5 h-4.5 text-teal-300/80 shrink-0" />
-            <span>Bloqueado: Monte as 4 Refeições ({dailyStats.completedCount}/4)</span>
-          </button>
+            <Lock className="w-4 h-4 text-teal-300/80 shrink-0" />
+            <span>Monte as 4 Refeições ({dailyStats.completedCount}/4)</span>
+          </div>
         )}
       </div>
     </div>

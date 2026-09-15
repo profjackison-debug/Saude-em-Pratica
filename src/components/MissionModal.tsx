@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Star, Award, CheckCircle2, AlertCircle, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { MathChallenge, LearningBadge, AppScreenId } from '../types';
@@ -30,6 +30,13 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   const [currentIndex, setCurrentIndex] = useState(initialChallengeIndex);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    };
+  }, []);
 
   const currentChallenge = challenges[currentIndex];
   if (!currentChallenge) return null;
@@ -55,42 +62,65 @@ export const MissionModal: React.FC<MissionModalProps> = ({
 
   const isAlreadySolved = solvedChallengeIds.includes(currentChallenge.id);
 
-  const handleSubmitAnswer = () => {
-    if (!selectedOption) return;
-    setHasSubmitted(true);
-
-    if (selectedOption.isCorrect && !isAlreadySolved) {
-      playStarSound();
-      onSolveChallenge(currentChallenge.id);
-
-      // Trigger celebration confetti
-      try {
-        confetti({
-          particleCount: 50,
-          spread: 60,
-          origin: { y: 0.6 },
-        });
-      } catch {
-        // ignore
-      }
-
-      // Check badge unlock
-      if (currentChallenge.area === 'refeicoes') {
-        onUnlockBadge('badge-investigacao');
-      } else if (currentChallenge.area === 'movimento') {
-        onUnlockBadge('badge-participacao');
-      } else if (currentChallenge.area === 'imc') {
-        onUnlockBadge('badge-colaboracao');
-      }
-    }
-  };
-
   const handleAdvanceToNextScreen = () => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     playFanfare();
     if (onNavigateToScreen) {
       onNavigateToScreen(nextScreen.id);
     }
     onClose();
+  };
+
+  const handleSubmitAnswer = () => {
+    if (!selectedOption) return;
+    setHasSubmitted(true);
+
+    if (selectedOption.isCorrect) {
+      if (!isAlreadySolved) {
+        playStarSound();
+        onSolveChallenge(currentChallenge.id);
+
+        // Trigger celebration confetti
+        try {
+          confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.6 },
+          });
+        } catch {
+          // ignore
+        }
+
+        // Check badge unlock
+        if (currentChallenge.area === 'refeicoes') {
+          onUnlockBadge('badge-investigacao');
+        } else if (currentChallenge.area === 'movimento') {
+          onUnlockBadge('badge-participacao');
+        } else if (currentChallenge.area === 'imc') {
+          onUnlockBadge('badge-colaboracao');
+        }
+      }
+
+      // Ao acertar, vai direto para a próxima etapa sem precisar clicar na barra superior!
+      const canAdvanceDirectly = currentIndex === 0 ? areAllFourMealsCompleted : true;
+      if (canAdvanceDirectly) {
+        if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+        advanceTimerRef.current = setTimeout(() => {
+          handleAdvanceToNextScreen();
+        }, 1300);
+      }
+    }
+  };
+
+  const handleCloseModal = () => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    playClickSound();
+    const canAdvanceDirectly = currentIndex === 0 ? areAllFourMealsCompleted : true;
+    if (hasSubmitted && selectedOption?.isCorrect && canAdvanceDirectly) {
+      handleAdvanceToNextScreen();
+    } else {
+      onClose();
+    }
   };
 
   return (
@@ -117,10 +147,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
             </div>
           </div>
           <button
-            onClick={() => {
-              playClickSound();
-              onClose();
-            }}
+            onClick={handleCloseModal}
             className="p-1.5 rounded-xl hover:bg-white/20 text-teal-100 dark:text-blue-100 hover:text-white transition cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -239,9 +266,9 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                   ) : (
                     <button
                       onClick={handleAdvanceToNextScreen}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer animate-pulse"
                     >
-                      <span>Avançar para {nextScreen.name}</span>
+                      <span>Indo para {nextScreen.name}... (Avançar Agora)</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   )}
@@ -282,9 +309,9 @@ export const MissionModal: React.FC<MissionModalProps> = ({
               ) : (
                 <button
                   onClick={handleAdvanceToNextScreen}
-                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
+                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md animate-pulse"
                 >
-                  <span>🎉 Liberar & Avançar para {nextScreen.name}</span>
+                  <span>🎉 Indo para {nextScreen.name}... (Avançar Agora)</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )
