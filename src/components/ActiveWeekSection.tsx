@@ -181,6 +181,54 @@ export const ActiveWeekSection: React.FC<ActiveWeekSectionProps> = ({
             loading="eager"
           />
         </div>
+
+        {/* Step 3 -> Step 4 Advance Action Banner */}
+        <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-teal-900 via-emerald-950 to-blue-950 text-white flex flex-col sm:flex-row items-center justify-between gap-3 border-2 border-teal-500/40 shadow-md">
+          <div className="text-left">
+            <div className="text-xs sm:text-sm font-black flex items-center gap-2">
+              {isQuizSolved ? (
+                <>
+                  <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                  <span>Desafio de Movimento Concluído! Ranking Desbloqueado.</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4.5 h-4.5 text-amber-300 shrink-0" />
+                  <span>Etapa 3 em andamento: responda à Missão de Movimento para avançar!</span>
+                </>
+              )}
+            </div>
+            <p className="text-xs sm:text-sm text-teal-200 mt-0.5">
+              {isQuizSolved
+                ? 'Você completou a jornada de desafios! Veja suas conquistas e estrelas no Ranking da Turma.'
+                : 'Aperte no botão ao lado ou em "Começar missão" para responder ao quiz da média ativa e liberar o Ranking!'}
+            </p>
+          </div>
+
+          {isQuizSolved ? (
+            <button
+              onClick={() => {
+                playFanfare();
+                onNavigateToNext?.();
+              }}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer shrink-0 transition"
+            >
+              <span>🏆 Ver Minha Posição no Ranking</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                playClickSound();
+                onChallengeClick();
+              }}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer shrink-0 transition animate-pulse"
+            >
+              <span>🎯 Jogar Quiz de Movimento para Liberar Ranking</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Interactive Activity Day Modal */}
