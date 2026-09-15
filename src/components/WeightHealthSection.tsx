@@ -541,6 +541,7 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
             </button>
           )}
         </div>
+      </div>
 
       {/* Interactive Modal for BMI and Mathematical Grandezas */}
       {isCalculatorOpen && (
