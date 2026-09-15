@@ -329,6 +329,11 @@ export default function App() {
               consumedKcal={totalDailyKcal}
               consumedGrams={totalDailyGrams}
               isQuizSolved={isStep2QuizSolved}
+              studentMassKg={state.studentMassKg}
+              studentHeightM={state.studentHeightM}
+              onMetricsChange={(massKg, heightM) =>
+                dispatch({ type: 'SET_BODY_METRICS', massKg, heightM })
+              }
               onNavigateToNext={() => {
                 if (!canAccessActiveWeek) return;
                 setActiveScreen('active_week');
@@ -344,6 +349,12 @@ export default function App() {
               onChallengeClick={() => handleStartMission(2)}
               isFocusedView={true}
               isQuizSolved={isStep3QuizSolved}
+              studentMassKg={state.studentMassKg}
+              studentHeightM={state.studentHeightM}
+              onNavigateToWeight={() => {
+                setActiveScreen('weight');
+                if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               onNavigateToNext={() => {
                 if (!canAccessRanking) return;
                 setActiveScreen('ranking');
