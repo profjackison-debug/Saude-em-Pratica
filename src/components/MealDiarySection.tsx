@@ -23,6 +23,8 @@ interface MealDiarySectionProps {
   isFocusedView?: boolean;
   onCloseFocus?: () => void;
   onNavigateToWeight?: () => void;
+  isMissionSolved?: boolean;
+  onStartMission?: () => void;
 }
 
 const MEAL_TABS = [
@@ -97,6 +99,8 @@ export const MealDiarySection: React.FC<MealDiarySectionProps> = ({
   isFocusedView = false,
   onCloseFocus,
   onNavigateToWeight,
+  isMissionSolved,
+  onStartMission,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<FoodFilterTab>('suggested');
@@ -376,6 +380,8 @@ export const MealDiarySection: React.FC<MealDiarySectionProps> = ({
         mealSlots={mealSlots}
         onSelectMealTime={onSelectMealTime}
         onNavigateToWeight={onNavigateToWeight}
+        isMissionSolved={isMissionSolved}
+        onStartMission={onStartMission}
       />
 
       {/* Food Detail Modal */}

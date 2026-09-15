@@ -8,12 +8,16 @@ interface DailyBalanceBannerProps {
   mealSlots: Record<MealTimeId, { items: { food: { servingSizeGrams: number; per100g: { energyKcal: number } }; portions: number }[] }>;
   onSelectMealTime: (mealId: MealTimeId) => void;
   onNavigateToWeight?: () => void;
+  isMissionSolved?: boolean;
+  onStartMission?: () => void;
 }
 
 export const DailyBalanceBanner: React.FC<DailyBalanceBannerProps> = ({
   mealSlots,
   onSelectMealTime,
   onNavigateToWeight,
+  isMissionSolved = false,
+  onStartMission,
 }) => {
   const allMealKeys: MealTimeId[] = ['breakfast', 'lunch', 'snack', 'dinner'];
 
@@ -68,15 +72,19 @@ export const DailyBalanceBanner: React.FC<DailyBalanceBannerProps> = ({
         </div>
 
         <div>
-          {allFourMealsCompleted ? (
-            <div className="flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/20 border border-emerald-400/60 text-emerald-200 rounded-2xl text-xs sm:text-sm font-black shadow-xs">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>🎉 4 de 4 Refeições Concluídas!</span>
+          {allFourMealsCompleted && isMissionSolved ? (
+            <div className="flex items-center gap-1.5 bg-emerald-500/30 border border-emerald-400 text-emerald-200 text-xs font-black px-3 py-1.5 rounded-full shadow-xs">
+              <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+              <span>Etapa 1 Concluída com Sucesso!</span>
+            </div>
+          ) : allFourMealsCompleted ? (
+            <div className="flex items-center gap-1.5 bg-amber-500/30 border border-amber-400 text-amber-200 text-xs font-black px-3 py-1.5 rounded-full shadow-xs">
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span>4 de 4 Refeições Concluídas!</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-3.5 py-1.5 bg-amber-500/20 border border-amber-400/50 text-amber-200 rounded-2xl text-xs sm:text-sm font-black shadow-xs">
-              <Flame className="w-4 h-4 text-amber-400" />
-              <span>{dailyStats.completedCount} de 4 Refeições Montadas</span>
+            <div className="flex items-center gap-1.5 bg-teal-950/60 border border-teal-600/50 text-teal-300 text-xs font-bold px-3 py-1.5 rounded-full">
+              <span>{dailyStats.completedCount} de 4 Refeições Registradas</span>
             </div>
           )}
         </div>
@@ -184,67 +192,78 @@ export const DailyBalanceBanner: React.FC<DailyBalanceBannerProps> = ({
       <div className="pt-3.5 border-t border-teal-700/60 dark:border-blue-800/80 flex flex-col sm:flex-row items-center justify-between gap-3.5">
         <div className="text-left leading-normal">
           <div className="text-xs sm:text-sm font-black text-white flex items-center gap-2">
-            {allFourMealsCompleted ? (
-              <>
-                <Sparkles className="w-4.5 h-4.5 text-amber-300 shrink-0" />
-                <span>Pronto para o próximo passo! Todas as 4 refeições foram registradas.</span>
-              </>
-            ) : (
+            {!allFourMealsCompleted ? (
               <>
                 <Info className="w-4.5 h-4.5 text-teal-300 shrink-0" />
                 <span>
                   Faltam {4 - dailyStats.completedCount} refeição(ões) para o balanço energético completo do dia.
                 </span>
               </>
+            ) : !isMissionSolved ? (
+              <>
+                <Sparkles className="w-4.5 h-4.5 text-amber-300 shrink-0" />
+                <span>4 de 4 Refeições Concluídas! Agora jogue a missão para liberar o próximo passo.</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                <span>Missão 1 Concluída! Etapa "2. Peso e Saúde" 100% liberada.</span>
+              </>
             )}
           </div>
           <p className="text-xs sm:text-sm text-teal-200/95 font-medium mt-1">
-            {allFourMealsCompleted ? (
-              <>Clique no botão ao lado para avançar e investigar o impacto no peso corporal e IMC!</>
+            {!allFourMealsCompleted ? (
+              <>Monte ao menos 1 alimento em cada refeição (Café, Almoço, Lanche e Jantar) para liberar a missão.</>
+            ) : !isMissionSolved ? (
+              <>Aperte no botão ao lado ou em <strong>"Começar missão"</strong> para responder ao quiz e liberar "2. Peso e Saúde"!</>
             ) : (
-              <>Monte ao menos 1 alimento em cada refeição (Café, Almoço, Lanche e Jantar) para liberar o <strong>Passo 2</strong>.</>
+              <>Clique no botão ao lado para avançar e investigar o impacto no peso corporal e IMC!</>
             )}
           </p>
         </div>
 
-        <button
-          disabled={!allFourMealsCompleted}
-          onClick={() => {
-            if (!allFourMealsCompleted) return;
-            playFanfare();
-            try {
-              confetti({
-                particleCount: 65,
-                spread: 70,
-                origin: { y: 0.65 },
-                colors: ['#0d9488', '#3b82f6', '#f59e0b', '#10b981'],
-              });
-            } catch { /* ignore */ }
-            onNavigateToWeight?.();
-          }}
-          title={
-            !allFourMealsCompleted
-              ? `Bloqueado: Monte as 4 refeições para liberar (${dailyStats.completedCount}/4 concluídas)`
-              : 'Avançar para o passo 2. Peso e Saúde'
-          }
-          className={`w-full sm:w-auto px-6 py-3.5 rounded-2xl font-black text-xs sm:text-sm md:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg shrink-0 ${
-            allFourMealsCompleted
-              ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 shadow-amber-950/20 scale-[1.02] hover:scale-105 border-2 border-white cursor-pointer'
-              : 'bg-teal-950/50 border-2 border-teal-600/40 text-teal-200/60 cursor-not-allowed opacity-75'
-          }`}
-        >
-          {allFourMealsCompleted ? (
-            <>
-              <span>🎉 Avançar para "2. Peso e Saúde"</span>
-              <ArrowRight className="w-5 h-5" />
-            </>
-          ) : (
-            <>
-              <Lock className="w-4.5 h-4.5 text-teal-300/80 shrink-0" />
-              <span>Bloqueado: Monte as 4 Refeições ({dailyStats.completedCount}/4)</span>
-            </>
-          )}
-        </button>
+        {allFourMealsCompleted && isMissionSolved ? (
+          <button
+            onClick={() => {
+              playFanfare();
+              try {
+                confetti({
+                  particleCount: 65,
+                  spread: 70,
+                  origin: { y: 0.65 },
+                  colors: ['#0d9488', '#3b82f6', '#f59e0b', '#10b981'],
+                });
+              } catch { /* ignore */ }
+              onNavigateToWeight?.();
+            }}
+            title="Avançar para o passo 2. Peso e Saúde"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-black text-xs sm:text-sm md:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg shrink-0 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 shadow-amber-950/20 scale-[1.02] hover:scale-105 border-2 border-white cursor-pointer"
+          >
+            <span>🎉 Avançar para "2. Peso e Saúde"</span>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        ) : allFourMealsCompleted && !isMissionSolved ? (
+          <button
+            onClick={() => {
+              playClickSound();
+              onStartMission?.();
+            }}
+            title="Começar o quiz da missão para desbloquear o passo 2"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-black text-xs sm:text-sm md:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg shrink-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 text-white shadow-emerald-950/20 scale-[1.02] hover:scale-105 border-2 border-white cursor-pointer animate-pulse"
+          >
+            <span>🎯 Jogar Quiz para Liberar Etapa 2</span>
+            <ArrowRight className="w-5 h-5" />
+          </button>
+        ) : (
+          <button
+            disabled
+            title={`Bloqueado: Monte as 4 refeições para liberar (${dailyStats.completedCount}/4 concluídas)`}
+            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-black text-xs sm:text-sm md:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg shrink-0 bg-teal-950/50 border-2 border-teal-600/40 text-teal-200/60 cursor-not-allowed opacity-75"
+          >
+            <Lock className="w-4.5 h-4.5 text-teal-300/80 shrink-0" />
+            <span>Bloqueado: Monte as 4 Refeições ({dailyStats.completedCount}/4)</span>
+          </button>
+        )}
       </div>
     </div>
   );
