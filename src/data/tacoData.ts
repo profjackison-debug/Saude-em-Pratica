@@ -1339,17 +1339,4 @@ export const MATH_CHALLENGES: MathChallenge[] = [
       { id: 'd', text: '42 minutos por dia', isCorrect: false, explanation: '42 minutos por dia somaria apenas 294 minutos na semana.' },
     ],
   },
-  {
-    id: 'chal-4',
-    title: 'Rendimento & Proporção de Suco Natural',
-    area: 'refeicoes',
-    question: 'Para preparar 1 litro (1000ml) de suco natural de caju ou laranja na merenda escolar, são utilizadas 5 frutas in natura. Quantas frutas serão necessárias para preparar uma jarra de 2,4 litros mantendo a mesma concentração?',
-    context: 'Proporcionalidade direta aplicada ao preparo de sucos na cantina escolar.',
-    options: [
-      { id: 'a', text: '12 frutas (5 × 2,4 = 12)', isCorrect: true, explanation: 'Sensacional! 5 frutas por litro × 2,4 litros = 12 frutas inteiras. Regra de três simples perfeita!' },
-      { id: 'b', text: '10 frutas', isCorrect: false, explanation: '10 frutas renderiam apenas 2,0 litros (10 ÷ 5 = 2).' },
-      { id: 'c', text: '15 frutas', isCorrect: false, explanation: '15 frutas renderiam 3,0 litros na proporção estabelecida.' },
-      { id: 'd', text: '8 frutas', isCorrect: false, explanation: '8 frutas renderiam apenas 1,6 litros.' },
-    ],
-  },
 ];

@@ -359,7 +359,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         badges: loadBadgesFromStorage(action.student.id),
         solvedChallengeIds: loadSolvedFromStorage(action.student.id),
         progressPercentage: action.student.completedMissions
-          ? Math.min(100, Math.round((action.student.completedMissions / 4) * 100))
+          ? Math.min(100, Math.round((action.student.completedMissions / 3) * 100))
           : 0,
         activeScreen: 'meals',
         activeMealId: 'breakfast',
@@ -404,7 +404,7 @@ function loadInitialState(): GameState {
     activeScreen: 'meals',
     badges: loadBadgesFromStorage(student?.id),
     progressPercentage: student?.completedMissions
-      ? Math.min(100, Math.round((student.completedMissions / 4) * 100))
+      ? Math.min(100, Math.round((student.completedMissions / 3) * 100))
       : 0,
     solvedChallengeIds: loadSolvedFromStorage(student?.id),
     theme: getInitialTheme(),

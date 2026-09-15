@@ -28,7 +28,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   badges,
   currentStudent,
   solvedMissionsCount = 0,
-  totalMissionsCount = 4,
+  totalMissionsCount = 3,
   onStartMission,
   onOpenExportModal,
   onOpenSettings,
