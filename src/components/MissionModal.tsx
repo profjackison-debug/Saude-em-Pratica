@@ -8,7 +8,7 @@ function shuffleArray<T>(items: T[]): T[] {
   const arr = [...items];
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+    [arr[j], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
 }
@@ -38,12 +38,46 @@ export const QUESTION_BADGE_MAP: Record<string, string> = {
   'chal-3': 'badge-participacao',
 };
 
+export interface QuizAnswerRecord {
+  selectedOptionId: string;
+  isCorrect: boolean;
+}
+
+export function getQuizAnswersStorageKey(studentId?: string | null): string {
+  return studentId ? `saude_pratica_quiz_answers_student_${studentId}` : 'saude_pratica_quiz_answers_guest_v1';
+}
+
+export function loadQuizAnswersFromStorage(studentId?: string | null): Record<string, QuizAnswerRecord> {
+  try {
+    if (typeof window !== 'undefined') {
+      const key = getQuizAnswersStorageKey(studentId);
+      const raw = localStorage.getItem(key);
+      if (raw) return JSON.parse(raw);
+    }
+  } catch {
+    /* ignore */
+  }
+  return {};
+}
+
+export function saveQuizAnswersToStorage(answers: Record<string, QuizAnswerRecord>, studentId?: string | null): void {
+  try {
+    if (typeof window !== 'undefined') {
+      const key = getQuizAnswersStorageKey(studentId);
+      localStorage.setItem(key, JSON.stringify(answers));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 interface MissionModalProps {
   challenges: MathChallenge[];
   initialChallengeIndex?: number;
   badges: LearningBadge[];
   solvedChallengeIds: string[];
   areAllFourMealsCompleted?: boolean;
+  studentId?: string | null;
   onClose: () => void;
   onSolveChallenge: (challengeId: string) => void;
   onUnlockBadge: (badgeId: string) => void;
@@ -57,6 +91,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   badges,
   solvedChallengeIds,
   areAllFourMealsCompleted = false,
+  studentId,
   onClose,
   onSolveChallenge,
   onUnlockBadge,
@@ -67,17 +102,17 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Record<string, boolean>>({});
+  const [userAnswers, setUserAnswers] = useState<Record<string, QuizAnswerRecord>>(() =>
+    loadQuizAnswersFromStorage(studentId)
+  );
   const [shuffledOptionsMap, setShuffledOptionsMap] = useState<Record<string, QuizOption[]>>({});
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setCurrentIndex(initialChallengeIndex);
-    setCurrentQuestionIndex(0);
-    setSelectedOptionId(null);
-    setHasSubmitted(false);
+    const saved = loadQuizAnswersFromStorage(studentId);
+    setUserAnswers(saved);
 
-    // Embaralha as alternativas de todas as questões desta missão ao abrir
     const targetChallenge = challenges[initialChallengeIndex];
     if (targetChallenge) {
       const qList: QuizQuestion[] =
@@ -92,13 +127,29 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                 options: targetChallenge.options || [],
               },
             ];
+
+      // Abre na primeira pergunta pendente, ou na 0 se todas respondidas
+      const firstUnansweredIdx = qList.findIndex((q) => !saved[q.id]);
+      const targetIdx = firstUnansweredIdx >= 0 ? firstUnansweredIdx : 0;
+      setCurrentQuestionIndex(targetIdx);
+
+      const activeQ = qList[targetIdx];
+      if (activeQ && saved[activeQ.id]) {
+        setSelectedOptionId(saved[activeQ.id].selectedOptionId);
+        setHasSubmitted(true);
+      } else {
+        setSelectedOptionId(null);
+        setHasSubmitted(false);
+      }
+
+      // Embaralha as alternativas de todas as questões desta missão ao abrir
       const initialMap: Record<string, QuizOption[]> = {};
       qList.forEach((q) => {
         initialMap[q.id] = shuffleArray(q.options || []);
       });
       setShuffledOptionsMap(initialMap);
     }
-  }, [initialChallengeIndex, challenges]);
+  }, [initialChallengeIndex, challenges, studentId]);
 
   useEffect(() => {
     return () => {
@@ -173,68 +224,51 @@ export const MissionModal: React.FC<MissionModalProps> = ({
     onClose();
   };
 
-  const isLastQuestion = currentQuestionIndex === questions.length - 1;
-  const allCompleted = questions.every((q) => answeredQuestionIds[q.id]);
+  // Contadores de respostas e acertos reais
+  const allCompleted = questions.every((q) => Boolean(userAnswers[q.id]));
+  const answeredCount = questions.filter((q) => Boolean(userAnswers[q.id])).length;
+  const correctCount = questions.filter((q) => userAnswers[q.id]?.isCorrect).length;
 
   const handleSubmitAnswer = () => {
-    if (!selectedOption) return;
+    if (!selectedOption || hasSubmitted) return;
     setHasSubmitted(true);
 
-    if (selectedOption.isCorrect) {
-      playStarSound();
-      const updatedAnswered = { ...answeredQuestionIds, [currentQuestion.id]: true };
-      setAnsweredQuestionIds(updatedAnswered);
+    const isCorrect = Boolean(selectedOption.isCorrect);
+    const updatedAnswers: Record<string, QuizAnswerRecord> = {
+      ...userAnswers,
+      [currentQuestion.id]: {
+        selectedOptionId: selectedOption.id,
+        isCorrect,
+      },
+    };
+    setUserAnswers(updatedAnswers);
+    saveQuizAnswersToStorage(updatedAnswers, studentId);
 
-      // Desbloqueia medalha e concede estrela para esta pergunta específica
+    if (isCorrect) {
+      playStarSound();
       const targetBadgeId = QUESTION_BADGE_MAP[currentQuestion.id] || QUESTION_BADGE_MAP[currentChallenge.id];
       if (onAwardQuestionStar) {
         onAwardQuestionStar(currentQuestion.id, targetBadgeId);
       } else if (targetBadgeId) {
         onUnlockBadge(targetBadgeId);
       }
+    } else {
+      playClickSound();
+    }
 
-      const allNowCompleted = questions.every((q) => updatedAnswered[q.id]);
+    // Se respondeu a todas as questões da missão (certas ou erradas), conclui o desafio da etapa
+    const allNowCompleted = questions.every((q) => Boolean(updatedAnswers[q.id]));
+    if (allNowCompleted && !isAlreadySolved) {
+      onSolveChallenge(currentChallenge.id);
 
-      if (allNowCompleted) {
-        if (!isAlreadySolved) {
-          onSolveChallenge(currentChallenge.id);
-
-          try {
-            confetti({
-              particleCount: 60,
-              spread: 70,
-              origin: { y: 0.6 },
-            });
-          } catch {
-            // ignore
-          }
-
-          // Garante que todas as 4 medalhas desta missão estão desbloqueadas
-          if (currentChallenge.id === 'chal-1' || currentChallenge.area === 'refeicoes') {
-            onUnlockBadge('badge-investigacao');
-            onUnlockBadge('badge-prato-verde');
-            onUnlockBadge('badge-regra-tres');
-            onUnlockBadge('badge-nutri-energia');
-          } else if (currentChallenge.id === 'chal-2' || currentChallenge.area === 'imc') {
-            onUnlockBadge('badge-grandezas-imc');
-            onUnlockBadge('badge-potenciacao');
-            onUnlockBadge('badge-divisao-decimal');
-            onUnlockBadge('badge-colaboracao');
-          } else if (currentChallenge.id === 'chal-3' || currentChallenge.area === 'movimento') {
-            onUnlockBadge('badge-participacao');
-            onUnlockBadge('badge-estrategista-movimento');
-            onUnlockBadge('badge-tempo-ativo');
-            onUnlockBadge('badge-constancia-semanal');
-          }
-        }
-
-        const canAdvanceDirectly = currentIndex === 0 ? areAllFourMealsCompleted : true;
-        if (canAdvanceDirectly) {
-          if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-          advanceTimerRef.current = setTimeout(() => {
-            handleAdvanceToNextScreen();
-          }, 2200);
-        }
+      try {
+        confetti({
+          particleCount: 60,
+          spread: 70,
+          origin: { y: 0.6 },
+        });
+      } catch {
+        // ignore
       }
     }
   };
@@ -244,51 +278,41 @@ export const MissionModal: React.FC<MissionModalProps> = ({
     playClickSound();
     setCurrentQuestionIndex(idx);
     const targetQ = questions[idx];
-    const isDone = Boolean(targetQ && answeredQuestionIds[targetQ.id]);
-    setSelectedOptionId(null);
-    setHasSubmitted(isDone);
-    if (targetQ && !isDone && targetQ.options?.length) {
-      setShuffledOptionsMap((prev) => ({
-        ...prev,
-        [targetQ.id]: shuffleArray(targetQ.options),
-      }));
+    const recorded = targetQ ? userAnswers[targetQ.id] : undefined;
+    if (recorded) {
+      setSelectedOptionId(recorded.selectedOptionId);
+      setHasSubmitted(true);
+    } else {
+      setSelectedOptionId(null);
+      setHasSubmitted(false);
+      if (targetQ && targetQ.options?.length && !shuffledOptionsMap[targetQ.id]) {
+        setShuffledOptionsMap((prev) => ({
+          ...prev,
+          [targetQ.id]: shuffleArray(targetQ.options),
+        }));
+      }
     }
   };
 
   const handleNextQuestion = () => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     playClickSound();
-    const nextIdx = Math.min(questions.length - 1, currentQuestionIndex + 1);
-    setCurrentQuestionIndex(nextIdx);
-    const nextQ = questions[nextIdx];
-    const isNextDone = Boolean(nextQ && answeredQuestionIds[nextQ.id]);
-    setSelectedOptionId(null);
-    setHasSubmitted(isNextDone);
-    if (nextQ && !isNextDone && nextQ.options?.length) {
-      setShuffledOptionsMap((prev) => ({
-        ...prev,
-        [nextQ.id]: shuffleArray(nextQ.options),
-      }));
-    }
-  };
 
-  const handleRetry = () => {
-    playClickSound();
-    setHasSubmitted(false);
-    setSelectedOptionId(null);
-    if (currentQuestion && currentQuestion.options?.length) {
-      setShuffledOptionsMap((prev) => ({
-        ...prev,
-        [currentQuestion.id]: shuffleArray(currentQuestion.options),
-      }));
+    // Avança para a próxima pergunta sequencial ou próxima não respondida
+    let nextIdx = currentQuestionIndex + 1;
+    if (nextIdx >= questions.length) {
+      const firstUnanswered = questions.findIndex((q) => !userAnswers[q.id]);
+      nextIdx = firstUnanswered >= 0 ? firstUnanswered : questions.length - 1;
     }
+
+    handleSelectQuestion(nextIdx);
   };
 
   const handleCloseModal = () => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     playClickSound();
     const canAdvanceDirectly = currentIndex === 0 ? areAllFourMealsCompleted : true;
-    if (hasSubmitted && selectedOption?.isCorrect && allCompleted && canAdvanceDirectly) {
+    if (allCompleted && canAdvanceDirectly) {
       handleAdvanceToNextScreen();
     } else {
       onClose();
@@ -327,29 +351,44 @@ export const MissionModal: React.FC<MissionModalProps> = ({
             </button>
           </div>
 
-          {/* Stepper for questions (1, 2, 3, 4) */}
+          {/* Stepper for questions (1, 2, 3, 4) com indicadores claros de acerto (✓) e erro (✗) */}
           <div className="flex items-center gap-2 pt-2 border-t border-white/15 flex-wrap">
             <span className="text-[11px] text-teal-200 dark:text-blue-200 font-bold mr-0.5">
               Questões:
             </span>
             {questions.map((q, idx) => {
-              const isDone = Boolean(answeredQuestionIds[q.id]);
+              const answer = userAnswers[q.id];
+              const isAnswered = Boolean(answer);
+              const isCorrect = answer?.isCorrect;
               const isCurrent = idx === currentQuestionIndex;
+
+              let btnClass = 'bg-white/15 text-white/80 hover:bg-white/25 border-white/20';
+              if (isCurrent) {
+                btnClass =
+                  'bg-white dark:bg-[#0f1b33] text-teal-950 dark:text-blue-100 border-white shadow-sm ring-2 ring-teal-300/60';
+              } else if (isAnswered) {
+                btnClass = isCorrect
+                  ? 'bg-emerald-500 text-white border-emerald-400'
+                  : 'bg-rose-500 text-white border-rose-400';
+              }
+
               return (
                 <button
                   key={q.id}
                   type="button"
                   onClick={() => handleSelectQuestion(idx)}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 border ${
-                    isCurrent
-                      ? 'bg-white dark:bg-[#0f1b33] text-teal-950 dark:text-blue-100 border-white shadow-sm ring-2 ring-teal-300/60'
-                      : isDone
-                      ? 'bg-emerald-500 text-white border-emerald-400'
-                      : 'bg-white/15 text-white/80 hover:bg-white/25 border-white/20'
-                  }`}
-                  title={`Ir para a Pergunta ${idx + 1}`}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 border ${btnClass}`}
+                  title={
+                    isAnswered
+                      ? `Pergunta ${idx + 1} (${isCorrect ? 'Correta ✓' : 'Incorreta ✗'})`
+                      : `Ir para a Pergunta ${idx + 1}`
+                  }
                 >
-                  {isDone ? <span className="font-bold">✓</span> : <span>{idx + 1}</span>}
+                  {isAnswered ? (
+                    isCorrect ? <span className="font-bold">✓</span> : <span className="font-bold">✗</span>
+                  ) : (
+                    <span>{idx + 1}</span>
+                  )}
                   <span>P{idx + 1}</span>
                 </button>
               );
@@ -425,27 +464,44 @@ export const MissionModal: React.FC<MissionModalProps> = ({
               className={`p-3.5 rounded-2xl border ${
                 selectedOption.isCorrect
                   ? 'bg-emerald-50/90 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-100'
-                  : 'bg-amber-50/90 dark:bg-amber-950/70 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-100'
+                  : 'bg-rose-50/90 dark:bg-rose-950/70 border-rose-300 dark:border-rose-700 text-rose-900 dark:text-rose-100'
               } animate-in fade-in duration-200`}
             >
               <div className="flex items-center gap-2 font-black text-xs sm:text-sm mb-1">
                 {selectedOption.isCorrect ? (
                   allCompleted ? (
                     <>
-                      <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>Sensacional! Você concluiu todas as {questions.length} perguntas da missão! (+4 Estrelas ⭐ e 4 Medalhas 🏅)</span>
+                      <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>
+                        Sensacional! Missão concluída com {correctCount} de {questions.length}{' '}
+                        {correctCount === 1 ? 'acerto' : 'acertos'} (+{correctCount} ⭐)!
+                      </span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>Resposta Correta! (+1 Estrela ⭐ e Medalha Conquistada 🏅) — Questão {currentQuestionIndex + 1} de {questions.length}</span>
+                      <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>
+                        Resposta Correta! (+1 Estrela ⭐ e Medalha Conquistada 🏅) — Questão {currentQuestionIndex + 1} de {questions.length}
+                      </span>
                     </>
                   )
                 ) : (
-                  <>
-                    <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                    <span>Quase lá! Veja a explicação pedagógica:</span>
-                  </>
+                  allCompleted ? (
+                    <>
+                      <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                      <span>
+                        Resposta Incorreta. Missão finalizada com {correctCount} de {questions.length}{' '}
+                        {correctCount === 1 ? 'acerto' : 'acertos'} ({correctCount} ⭐).
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                      <span>
+                        Resposta Incorreta! Veja a explicação pedagógica e avance para a próxima pergunta:
+                      </span>
+                    </>
+                  )
                 )}
               </div>
               <p className="text-xs leading-relaxed font-medium">
@@ -453,55 +509,56 @@ export const MissionModal: React.FC<MissionModalProps> = ({
               </p>
 
               {/* Action Inside Feedback */}
-              {selectedOption.isCorrect && (
-                <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-blue-900/60 flex items-center justify-between gap-2 flex-wrap">
-                  {allCompleted ? (
+              <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-blue-900/60 flex items-center justify-between gap-2 flex-wrap">
+                {allCompleted ? (
+                  currentIndex === 0 && !areAllFourMealsCompleted ? (
                     <>
-                      <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                        <span>{nextScreen.icon}</span>
-                        {currentIndex === 0 && !areAllFourMealsCompleted ? (
-                          <span>Missão concluída! Monte as 4 refeições no Diário para liberar <strong>{nextScreen.name}</strong></span>
-                        ) : (
-                          <span>Próxima etapa desbloqueada: <strong>{nextScreen.name}</strong></span>
-                        )}
-                      </span>
-                      {currentIndex === 0 && !areAllFourMealsCompleted ? (
-                        <button
-                          onClick={() => {
-                            playClickSound();
-                            onClose();
-                          }}
-                          className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-                        >
-                          <span>🍽️ Ir para o Diário</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={handleAdvanceToNextScreen}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer animate-pulse"
-                        >
-                          <span>Avançar para {nextScreen.name}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-xs font-black text-emerald-800 dark:text-emerald-300">
-                        Pergunta {currentQuestionIndex + 1} concluída! Continue para finalizar a missão.
+                      <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                        Missão concluída! Monte as 4 refeições no Diário para liberar <strong>{nextScreen.name}</strong>
                       </span>
                       <button
-                        onClick={handleNextQuestion}
+                        onClick={() => {
+                          playClickSound();
+                          onClose();
+                        }}
                         className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
                       >
-                        <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
+                        <span>🍽️ Ir para o Diário</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </>
-                  )}
-                </div>
-              )}
+                  ) : (
+                    <>
+                      <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                        <span>{nextScreen.icon}</span>
+                        <span>Próxima etapa desbloqueada: <strong>{nextScreen.name}</strong></span>
+                      </span>
+                      <button
+                        onClick={handleAdvanceToNextScreen}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer animate-pulse"
+                      >
+                        <span>Avançar para {nextScreen.name}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )
+                ) : (
+                  <>
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {selectedOption.isCorrect
+                        ? `Pergunta ${currentQuestionIndex + 1} acertada! Continue para somar pontos.`
+                        : `Resposta registrada. Siga para a próxima pergunta para pontuar no Ranking!`}
+                    </span>
+                    <button
+                      onClick={handleNextQuestion}
+                      className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -512,8 +569,8 @@ export const MissionModal: React.FC<MissionModalProps> = ({
             <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
             <span>
               {allCompleted
-                ? 'Missão 100% concluída! Recompensa liberada.'
-                : `Progresso da Missão: ${Object.keys(answeredQuestionIds).length} de ${questions.length} respondidas`}
+                ? `Missão concluída! ${correctCount} de ${questions.length} acertos (${correctCount} estrelas ⭐)`
+                : `Progresso da Missão: ${answeredCount} de ${questions.length} respondidas (${correctCount} acerto${correctCount === 1 ? '' : 's'})`}
             </span>
           </div>
 
@@ -526,43 +583,34 @@ export const MissionModal: React.FC<MissionModalProps> = ({
               >
                 Confirmar Resposta
               </button>
-            ) : selectedOption?.isCorrect ? (
-              allCompleted ? (
-                currentIndex === 0 && !areAllFourMealsCompleted ? (
-                  <button
-                    onClick={() => {
-                      playClickSound();
-                      onClose();
-                    }}
-                    className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
-                  >
-                    <span>🍽️ Missão Concluída! Montar as 4 Refeições</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleAdvanceToNextScreen}
-                    className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md animate-pulse"
-                  >
-                    <span>🎉 Avançar para {nextScreen.name}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )
-              ) : (
+            ) : allCompleted ? (
+              currentIndex === 0 && !areAllFourMealsCompleted ? (
                 <button
-                  onClick={handleNextQuestion}
+                  onClick={() => {
+                    playClickSound();
+                    onClose();
+                  }}
                   className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
                 >
-                  <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
+                  <span>🍽️ Missão Concluída! Montar as 4 Refeições</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleAdvanceToNextScreen}
+                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md animate-pulse"
+                >
+                  <span>🎉 Concluir Missão & Avançar para {nextScreen.name}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )
             ) : (
               <button
-                onClick={handleRetry}
-                className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+                onClick={handleNextQuestion}
+                className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
               >
-                <span>Tentar Novamente</span>
+                <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
             )}
           </div>
