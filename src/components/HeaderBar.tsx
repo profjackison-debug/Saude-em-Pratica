@@ -94,14 +94,22 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             </div>
           </div>
 
-          {/* Speech Bubble: "Conhecimento hoje, mais saúde amanhã!" */}
-          <div className="hidden sm:flex relative bg-white/95 dark:bg-[#0f1b33] border border-teal-200/90 dark:border-blue-700/80 text-teal-950 dark:text-blue-100 px-3.5 py-1.5 rounded-2xl shadow-xs text-xs sm:text-sm font-bold items-center leading-snug">
-            {/* Pointer tail */}
-            <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-b-4 border-b-transparent border-r-6 border-r-teal-200 dark:border-r-blue-700" />
-            <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-0 h-0 border-t-3 border-t-transparent border-b-3 border-b-transparent border-r-5 border-r-white dark:border-r-[#0f1b33]" />
-            <span className="text-xs sm:text-sm font-extrabold text-teal-900 dark:text-blue-200">
-              Conhecimento hoje, mais saúde amanhã!
-            </span>
+          {/* Progress Bar Pill: "Seu progresso" (in place of speech bubble) */}
+          <div className="flex items-center gap-3 bg-white/90 dark:bg-[#0f1b33]/90 border border-teal-200/80 dark:border-blue-700/80 px-4 py-2 rounded-2xl shadow-xs w-full sm:w-auto min-w-[220px] sm:min-w-[260px]">
+            <div className="flex-1">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="font-black text-teal-950 dark:text-blue-100 text-xs sm:text-sm">Seu progresso</span>
+                <span className="font-bold text-teal-800 dark:text-blue-300 text-xs sm:text-sm">
+                  {solvedCount} de {totalMissionsCount} missões
+                </span>
+              </div>
+              <div className="w-full h-3 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 dark:from-blue-500 dark:via-sky-400 dark:to-blue-600 rounded-full transition-all duration-500 shadow-xs"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Mobile settings button */}
@@ -132,24 +140,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             >
               <Settings className="w-5 h-5" />
             </button>
-          </div>
-        </div>
-
-        {/* Center: "Seu progresso" (Green Progress Bar Pill) */}
-        <div className="flex items-center gap-3 bg-white/90 dark:bg-[#0f1b33]/90 border border-teal-200/80 dark:border-blue-700/80 px-4 py-2 rounded-2xl shadow-xs w-full lg:w-auto min-w-[280px]">
-          <div className="flex-1">
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="font-black text-teal-950 dark:text-blue-100 text-xs sm:text-sm">Seu progresso</span>
-              <span className="font-bold text-teal-800 dark:text-blue-300 text-xs sm:text-sm">
-                {solvedCount} de {totalMissionsCount} missões
-              </span>
-            </div>
-            <div className="w-full h-3 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 shadow-inner">
-              <div
-                className="h-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 dark:from-blue-500 dark:via-sky-400 dark:to-blue-600 rounded-full transition-all duration-500 shadow-xs"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
           </div>
         </div>
 
