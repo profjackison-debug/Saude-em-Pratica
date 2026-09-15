@@ -379,19 +379,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ? state.solvedChallengeIds
         : [...state.solvedChallengeIds, action.challengeId];
 
-      let challengeBadgeIds: string[] = [];
-      if (action.challengeId === 'chal-1') {
-        challengeBadgeIds = ['badge-investigacao', 'badge-prato-verde', 'badge-regra-tres', 'badge-nutri-energia'];
-      } else if (action.challengeId === 'chal-2') {
-        challengeBadgeIds = ['badge-grandezas-imc', 'badge-potenciacao', 'badge-divisao-decimal', 'badge-colaboracao'];
-      } else if (action.challengeId === 'chal-3') {
-        challengeBadgeIds = ['badge-participacao', 'badge-estrategista-movimento', 'badge-tempo-ativo', 'badge-constancia-semanal'];
-      }
-
-      const updatedBadges = state.badges.map((b) =>
-        challengeBadgeIds.includes(b.id) ? { ...b, unlocked: true } : b
-      );
-
       const targetMissions = Math.max(
         state.currentStudent?.completedMissions || 0,
         updatedSolvedIds.length
@@ -401,8 +388,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ? {
             ...state.currentStudent,
             completedMissions: targetMissions,
-            starsCount: Math.max(state.currentStudent.starsCount || 0, targetMissions * 4),
-            score: Math.max(state.currentStudent.score || 0, targetMissions * 400),
+            starsCount: state.currentStudent.starsCount || 0,
+            score: state.currentStudent.score || (state.currentStudent.starsCount || 0) * 100,
           }
         : null;
 
@@ -410,7 +397,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         currentStudent: updatedStudent,
         solvedChallengeIds: updatedSolvedIds,
-        badges: updatedBadges,
         progressPercentage: Math.min(100, Math.round((targetMissions / 3) * 100)),
       };
     }
@@ -428,13 +414,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const raw = action.student;
       const solvedList = loadSolvedFromStorage(raw.id);
       const minMissions = Math.max(raw.completedMissions || 0, solvedList.length);
-      const minStars = minMissions * 4;
-      const scaledStars = Math.max(raw.starsCount || 0, minStars, state.guestStarsCount);
+      const currentStars = Number.isFinite(raw.starsCount) ? Math.max(0, raw.starsCount) : 0;
+      const scaledStars = Math.max(currentStars, state.guestStarsCount);
+      const scaledScore = Number.isFinite(raw.score) ? Math.max(0, raw.score) : scaledStars * 100;
       const scaledStudent: StudentProfile = {
         ...raw,
         completedMissions: minMissions,
         starsCount: scaledStars,
-        score: Math.max(raw.score || 0, scaledStars * 100),
+        score: scaledScore,
       };
       return {
         ...state,
