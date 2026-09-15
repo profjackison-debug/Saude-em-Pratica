@@ -491,6 +491,51 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
                 </div>
               </div>
             </div>
+        {/* Step 2 -> Step 3 Advance Action Banner */}
+        <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-sky-900 via-blue-900 to-indigo-900 text-white flex flex-col sm:flex-row items-center justify-between gap-3 border-2 border-sky-500/40 shadow-md">
+          <div className="text-left">
+            <div className="text-xs sm:text-sm font-black flex items-center gap-2">
+              {isQuizSolved ? (
+                <>
+                  <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                  <span>Desafio do IMC Concluído! Etapa 3 Desbloqueada.</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4.5 h-4.5 text-amber-300 shrink-0" />
+                  <span>Etapa 2 em andamento: responda à Missão do IMC para avançar!</span>
+                </>
+              )}
+            </div>
+            <p className="text-xs sm:text-sm text-sky-200 mt-0.5">
+              {isQuizSolved
+                ? 'Avance para a Semana Ativa para planejar e calcular a média aritmética de movimento semanal.'
+                : 'Aperte no botão ao lado ou em "Começar missão" para responder o quiz e desbloquear "3. Semana Ativa"!'}
+            </p>
+          </div>
+
+          {isQuizSolved ? (
+            <button
+              onClick={() => {
+                playFanfare();
+                onNavigateToNext?.();
+              }}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer shrink-0 transition"
+            >
+              <span>🎉 Avançar para "3. Semana Ativa"</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                playClickSound();
+                onChallengeClick();
+              }}
+              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer shrink-0 transition animate-pulse"
+            >
+              <span>🎯 Jogar Quiz do IMC para Liberar Etapa 3</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
           )}
         </div>
       </div>

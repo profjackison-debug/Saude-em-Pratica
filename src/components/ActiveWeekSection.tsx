@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Activity, Clock, Dumbbell, Check, Plus, X } from 'lucide-react';
+import { Activity, Clock, Dumbbell, Check, Plus, X, ArrowRight, Sparkles, CheckCircle2, Lock } from 'lucide-react';
 import inclusiveMovementPhoto from '../assets/movimento_inclusivo_jovens.jpg';
-import { playClickSound } from '../utils/audio';
+import { playClickSound, playFanfare } from '../utils/audio';
 
 interface ActiveWeekSectionProps {
   onChallengeClick: () => void;
   isFocusedView?: boolean;
   onCloseFocus?: () => void;
+  isQuizSolved?: boolean;
+  onNavigateToNext?: () => void;
 }
 
 interface DayActivity {
@@ -23,6 +25,8 @@ export const ActiveWeekSection: React.FC<ActiveWeekSectionProps> = ({
   onChallengeClick,
   isFocusedView = false,
   onCloseFocus,
+  isQuizSolved = false,
+  onNavigateToNext,
 }) => {
   const [days, setDays] = useState<DayActivity[]>([
     { id: 'seg', shortDay: 'Seg', iconEmoji: '🚶‍♂️', iconBg: 'text-sky-600', minutes: 30, isStrengthening: false, name: 'Caminhada escolar' },
