@@ -516,11 +516,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
               )
             ) : (
               <button
-                onClick={() => {
-                  playClickSound();
-                  setHasSubmitted(false);
-                  setSelectedOptionId(null);
-                }}
+                onClick={handleRetry}
                 className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <span>Tentar Novamente</span>
