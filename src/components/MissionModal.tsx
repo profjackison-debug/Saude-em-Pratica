@@ -33,17 +33,17 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   if (!currentChallenge) return null;
   const selectedOption = currentChallenge.options.find((o) => o.id === selectedOptionId);
 
-  const getTargetScreen = (area: 'refeicoes' | 'imc' | 'movimento'): { id: AppScreenId; name: string; icon: string } => {
-    if (area === 'refeicoes') {
-      return { id: 'meals', name: '1. Refeições Diárias', icon: '🍽️' };
-    }
-    if (area === 'imc') {
+  const getNextScreen = (index: number): { id: AppScreenId; name: string; icon: string } => {
+    if (index === 0) {
       return { id: 'weight', name: '2. Peso e Saúde', icon: '⚖️' };
     }
-    return { id: 'active_week', name: '3. Semana Ativa', icon: '🏃' };
+    if (index === 1) {
+      return { id: 'active_week', name: '3. Semana Ativa', icon: '🏃' };
+    }
+    return { id: 'ranking', name: '4. Ranking da Turma', icon: '🏆' };
   };
 
-  const targetScreen = getTargetScreen(currentChallenge.area);
+  const nextScreen = getNextScreen(currentIndex);
 
   const handleSelectOption = (id: string) => {
     if (hasSubmitted) return;
@@ -83,23 +83,12 @@ export const MissionModal: React.FC<MissionModalProps> = ({
     }
   };
 
-  const handleGoToTargetScreen = () => {
+  const handleAdvanceToNextScreen = () => {
     playFanfare();
     if (onNavigateToScreen) {
-      onNavigateToScreen(targetScreen.id);
+      onNavigateToScreen(nextScreen.id);
     }
     onClose();
-  };
-
-  const handleNextChallenge = () => {
-    playClickSound();
-    if (currentIndex < challenges.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-      setSelectedOptionId(null);
-      setHasSubmitted(false);
-    } else {
-      handleGoToTargetScreen();
-    }
   };
 
   return (
