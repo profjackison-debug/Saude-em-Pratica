@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { X, User, Check, Sparkles, BookOpen, GraduationCap, ArrowRight, UserPlus, Users, LogOut } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, User, Check, Sparkles, BookOpen, GraduationCap, ArrowRight, UserPlus, Users, LogOut, Trash2 } from 'lucide-react';
 import { StudentProfile } from '../types';
-import { STUDENT_AVATARS, GRADE_OPTIONS, loadSavedStudentsList, saveStoredStudent } from '../data/rankData';
+import { STUDENT_AVATARS, GRADE_OPTIONS, loadSavedStudentsList, saveStoredStudent, removeSavedStudent } from '../data/rankData';
 import { playClickSound, playStarSound, playFanfare } from '../utils/audio';
 
 interface StudentLoginModalProps {
@@ -19,11 +19,19 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
   onLoginStudent,
   onLogout,
 }) => {
-  const savedStudents = useMemo(() => loadSavedStudentsList(), [isOpen]);
+  const [savedStudents, setSavedStudents] = useState<StudentProfile[]>(() => loadSavedStudentsList());
 
-  const [activeTab, setActiveTab] = useState<'create' | 'saved'>(
-    savedStudents.length > 0 ? 'saved' : 'create'
-  );
+  useEffect(() => {
+    if (isOpen) {
+      const list = loadSavedStudentsList();
+      setSavedStudents(list);
+      if (list.length === 0) {
+        setActiveTab('create');
+      }
+    }
+  }, [isOpen]);
+
+  const [activeTab, setActiveTab] = useState<'create' | 'saved'>('create');
   const [formMode, setFormMode] = useState<'new' | 'edit'>(currentStudent ? 'edit' : 'new');
 
   const [name, setName] = useState(currentStudent?.name || '');
