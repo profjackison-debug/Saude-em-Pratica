@@ -20,6 +20,7 @@ export default function App() {
   const {
     activeScreen,
     currentStudent,
+    guestStarsCount,
     mealSlots,
     activeMealId,
     badges,
@@ -66,6 +67,10 @@ export default function App() {
   const handleStartMission = (challengeIndex = 0) => {
     setInitialChallengeIdx(challengeIndex);
     setIsMissionModalOpen(true);
+  };
+
+  const handleAwardQuestionStar = (questionId: string, badgeId?: string) => {
+    dispatch({ type: 'AWARD_QUESTION_STAR', questionId, badgeId });
   };
 
   // Atomic — updates student stars, score, missions, and solvedIds in a single dispatch

@@ -185,6 +185,14 @@ export const MissionModal: React.FC<MissionModalProps> = ({
       const updatedAnswered = { ...answeredQuestionIds, [currentQuestion.id]: true };
       setAnsweredQuestionIds(updatedAnswered);
 
+      // Desbloqueia medalha e concede estrela para esta pergunta específica
+      const targetBadgeId = QUESTION_BADGE_MAP[currentQuestion.id] || QUESTION_BADGE_MAP[currentChallenge.id];
+      if (onAwardQuestionStar) {
+        onAwardQuestionStar(currentQuestion.id, targetBadgeId);
+      } else if (targetBadgeId) {
+        onUnlockBadge(targetBadgeId);
+      }
+
       const allNowCompleted = questions.every((q) => updatedAnswered[q.id]);
 
       if (allNowCompleted) {
@@ -201,12 +209,22 @@ export const MissionModal: React.FC<MissionModalProps> = ({
             // ignore
           }
 
-          if (currentChallenge.area === 'refeicoes') {
+          // Garante que todas as 4 medalhas desta missão estão desbloqueadas
+          if (currentChallenge.id === 'chal-1' || currentChallenge.area === 'refeicoes') {
             onUnlockBadge('badge-investigacao');
-          } else if (currentChallenge.area === 'movimento') {
-            onUnlockBadge('badge-participacao');
-          } else if (currentChallenge.area === 'imc') {
+            onUnlockBadge('badge-prato-verde');
+            onUnlockBadge('badge-regra-tres');
+            onUnlockBadge('badge-nutri-energia');
+          } else if (currentChallenge.id === 'chal-2' || currentChallenge.area === 'imc') {
+            onUnlockBadge('badge-grandezas-imc');
+            onUnlockBadge('badge-potenciacao');
+            onUnlockBadge('badge-divisao-decimal');
             onUnlockBadge('badge-colaboracao');
+          } else if (currentChallenge.id === 'chal-3' || currentChallenge.area === 'movimento') {
+            onUnlockBadge('badge-participacao');
+            onUnlockBadge('badge-estrategista-movimento');
+            onUnlockBadge('badge-tempo-ativo');
+            onUnlockBadge('badge-constancia-semanal');
           }
         }
 
@@ -415,12 +433,12 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                   allCompleted ? (
                     <>
                       <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>Sensacional! Você concluiu as {questions.length} perguntas da missão! (+1 Estrela ⭐️)</span>
+                      <span>Sensacional! Você concluiu todas as {questions.length} perguntas da missão! (+4 Estrelas ⭐ e 4 Medalhas 🏅)</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>Resposta Correta! ({currentQuestionIndex + 1} de {questions.length})</span>
+                      <span>Resposta Correta! (+1 Estrela ⭐ e Medalha Conquistada 🏅) — Questão {currentQuestionIndex + 1} de {questions.length}</span>
                     </>
                   )
                 ) : (
