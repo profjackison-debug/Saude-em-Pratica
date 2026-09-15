@@ -212,20 +212,22 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                 {selectedOption.explanation}
               </p>
 
-              {/* Direct Navigation Button to the Challenge's Screen */}
-              <div className="mt-2.5 pt-2.5 border-t border-slate-200/60 dark:border-blue-900/60 flex items-center justify-between gap-2 flex-wrap">
-                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <span>{targetScreen.icon}</span>
-                  <span>Aplicar na tela: <strong>{targetScreen.name}</strong></span>
-                </span>
-                <button
-                  onClick={handleGoToTargetScreen}
-                  className="bg-teal-700 dark:bg-blue-600 hover:bg-teal-800 dark:hover:bg-blue-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-                >
-                  <span>Abrir Tela {targetScreen.name}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              {/* Direct Navigation Button to Next Stage */}
+              {selectedOption.isCorrect && (
+                <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-blue-900/60 flex items-center justify-between gap-2 flex-wrap">
+                  <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                    <span>{nextScreen.icon}</span>
+                    <span>Próxima etapa desbloqueada: <strong>{nextScreen.name}</strong></span>
+                  </span>
+                  <button
+                    onClick={handleAdvanceToNextScreen}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    <span>Avançar para {nextScreen.name}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -234,7 +236,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
         <div className="p-4 bg-slate-50 dark:bg-[#0b162b] border-t border-slate-200 dark:border-blue-900/80 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
             <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
-            <span>Recompensa: 1 Estrela e Progresso</span>
+            <span>Recompensa: 1 Estrela e Desbloqueio de Etapa</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -246,36 +248,25 @@ export const MissionModal: React.FC<MissionModalProps> = ({
               >
                 Confirmar Resposta
               </button>
+            ) : selectedOption?.isCorrect ? (
+              <button
+                onClick={handleAdvanceToNextScreen}
+                className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
+              >
+                <span>🎉 Liberar & Avançar para {nextScreen.name}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             ) : (
-              <div className="flex items-center gap-2">
-                {currentIndex < challenges.length - 1 ? (
-                  <>
-                    <button
-                      onClick={handleGoToTargetScreen}
-                      className="bg-white dark:bg-[#132240] hover:bg-teal-50 dark:hover:bg-[#1b2f56] border border-teal-300 dark:border-blue-700 text-teal-800 dark:text-blue-200 font-bold text-xs px-3 py-2 rounded-xl transition cursor-pointer flex items-center gap-1"
-                      title={`Ir agora para ${targetScreen.name}`}
-                    >
-                      <span>Ir para Tela</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={handleNextChallenge}
-                      className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <span>Próximo Desafio</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={handleGoToTargetScreen}
-                    className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
-                  >
-                    <span>Concluir e Ir para {targetScreen.name}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+              <button
+                onClick={() => {
+                  playClickSound();
+                  setHasSubmitted(false);
+                  setSelectedOptionId(null);
+                }}
+                className="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <span>Tentar Novamente</span>
+              </button>
             )}
           </div>
         </div>
