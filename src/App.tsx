@@ -398,6 +398,7 @@ export default function App() {
           badges={badges}
           solvedChallengeIds={solvedChallengeIds}
           areAllFourMealsCompleted={areAllFourMealsCompleted}
+          studentId={currentStudent?.id}
           onClose={() => setIsMissionModalOpen(false)}
           onSolveChallenge={handleSolveChallenge}
           onUnlockBadge={handleUnlockBadge}
