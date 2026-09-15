@@ -514,15 +514,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 // ---------------------------------------------------------------------------
 function loadInitialState(): GameState {
   const student = loadStoredStudent();
-  const solved = loadSolvedFromStorage(student?.id);
-  const badges = loadBadgesFromStorage(student?.id);
-  const missionsCount = Math.max(student?.completedMissions || 0, solved.length);
+  const solved = student ? loadSolvedFromStorage(student.id) : [];
+  const badges = student ? loadBadgesFromStorage(student.id) : INITIAL_BADGES.map((b) => ({ ...b, unlocked: false }));
+  const missionsCount = student ? Math.max(student.completedMissions || 0, solved.length) : 0;
 
   return {
     currentStudent: student,
     guestStarsCount: 0,
     solvedQuestionIds: [],
-    mealSlots: loadMealSlotsFromStorage(student?.id),
+    mealSlots: student ? loadMealSlotsFromStorage(student.id) : createDefaultMealSlots(),
     activeMealId: 'breakfast',
     activeScreen: 'meals',
     badges,
