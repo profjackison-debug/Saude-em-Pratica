@@ -491,6 +491,9 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
                 </div>
               </div>
             </div>
+          )}
+        </div>
+
         {/* Step 2 -> Step 3 Advance Action Banner */}
         <div className="mt-4 p-4 rounded-2xl bg-gradient-to-r from-sky-900 via-blue-900 to-indigo-900 text-white flex flex-col sm:flex-row items-center justify-between gap-3 border-2 border-sky-500/40 shadow-md">
           <div className="text-left">
@@ -538,7 +541,6 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
             </button>
           )}
         </div>
-      </div>
 
       {/* Interactive Modal for BMI and Mathematical Grandezas */}
       {isCalculatorOpen && (
