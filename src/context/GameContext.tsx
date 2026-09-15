@@ -378,24 +378,71 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, activeScreen: action.screen };
 
     // ---- Challenge / gamification (atomic — fixes race condition) ----
-    case 'SOLVE_CHALLENGE': {
-      // Prevent duplicate solving
-      if (state.solvedChallengeIds.includes(action.challengeId)) {
+    case 'AWARD_QUESTION_STAR': {
+      if (state.solvedQuestionIds.includes(action.questionId)) {
         return state;
       }
+      const updatedQuestionIds = [...state.solvedQuestionIds, action.questionId];
+      const updatedBadges = action.badgeId
+        ? state.badges.map((b) => (b.id === action.badgeId ? { ...b, unlocked: true } : b))
+        : state.badges;
+
       const updatedStudent: StudentProfile | null = state.currentStudent
         ? {
             ...state.currentStudent,
-            starsCount: state.currentStudent.starsCount + 1,
-            score: (state.currentStudent.score || 0) + 150,
-            completedMissions: (state.currentStudent.completedMissions || 0) + 1,
+            starsCount: (state.currentStudent.starsCount || 0) + 1,
+            score: (state.currentStudent.score || 0) + 100,
           }
         : null;
+
+      return {
+        ...state,
+        solvedQuestionIds: updatedQuestionIds,
+        badges: updatedBadges,
+        guestStarsCount: state.currentStudent ? state.guestStarsCount : state.guestStarsCount + 1,
+        currentStudent: updatedStudent,
+      };
+    }
+
+    case 'SOLVE_CHALLENGE': {
+      const alreadySolved = state.solvedChallengeIds.includes(action.challengeId);
+      const updatedSolvedIds = alreadySolved
+        ? state.solvedChallengeIds
+        : [...state.solvedChallengeIds, action.challengeId];
+
+      let challengeBadgeIds: string[] = [];
+      if (action.challengeId === 'chal-1') {
+        challengeBadgeIds = ['badge-investigacao', 'badge-prato-verde', 'badge-regra-tres', 'badge-nutri-energia'];
+      } else if (action.challengeId === 'chal-2') {
+        challengeBadgeIds = ['badge-grandezas-imc', 'badge-potenciacao', 'badge-divisao-decimal', 'badge-colaboracao'];
+      } else if (action.challengeId === 'chal-3') {
+        challengeBadgeIds = ['badge-participacao', 'badge-estrategista-movimento', 'badge-tempo-ativo', 'badge-constancia-semanal'];
+      }
+
+      const updatedBadges = state.badges.map((b) =>
+        challengeBadgeIds.includes(b.id) ? { ...b, unlocked: true } : b
+      );
+
+      const targetMissions = Math.max(
+        state.currentStudent?.completedMissions || 0,
+        updatedSolvedIds.length
+      );
+
+      const updatedStudent: StudentProfile | null = state.currentStudent
+        ? {
+            ...state.currentStudent,
+            completedMissions: targetMissions,
+            starsCount: Math.max(state.currentStudent.starsCount || 0, targetMissions * 4),
+            score: Math.max(state.currentStudent.score || 0, targetMissions * 400),
+          }
+        : null;
+
       return {
         ...state,
         currentStudent: updatedStudent,
-        solvedChallengeIds: [...state.solvedChallengeIds, action.challengeId],
-        progressPercentage: Math.min(100, state.progressPercentage + 10),
+        solvedChallengeIds: updatedSolvedIds,
+        badges: updatedBadges,
+        progressPercentage: Math.min(100, Math.round((targetMissions / 3) * 100)),
       };
     }
 
@@ -408,25 +455,39 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
 
     // ---- Student ----
-    case 'LOGIN_STUDENT':
+    case 'LOGIN_STUDENT': {
+      const raw = action.student;
+      const solvedList = loadSolvedFromStorage(raw.id);
+      const minMissions = Math.max(raw.completedMissions || 0, solvedList.length);
+      const minStars = minMissions * 4;
+      const scaledStars = Math.max(raw.starsCount || 0, minStars, state.guestStarsCount);
+      const scaledStudent: StudentProfile = {
+        ...raw,
+        completedMissions: minMissions,
+        starsCount: scaledStars,
+        score: Math.max(raw.score || 0, scaledStars * 100),
+      };
       return {
         ...state,
-        currentStudent: action.student,
-        mealSlots: loadMealSlotsFromStorage(action.student.id),
-        badges: loadBadgesFromStorage(action.student.id),
-        solvedChallengeIds: loadSolvedFromStorage(action.student.id),
-        progressPercentage: action.student.completedMissions
-          ? Math.min(100, Math.round((action.student.completedMissions / 3) * 100))
+        currentStudent: scaledStudent,
+        mealSlots: loadMealSlotsFromStorage(scaledStudent.id),
+        badges: loadBadgesFromStorage(scaledStudent.id),
+        solvedChallengeIds: solvedList,
+        progressPercentage: minMissions
+          ? Math.min(100, Math.round((minMissions / 3) * 100))
           : 0,
         activeScreen: 'meals',
         activeMealId: 'breakfast',
       };
+    }
 
     case 'LOGOUT_STUDENT':
       clearStoredStudent();
       return {
         ...state,
         currentStudent: null,
+        guestStarsCount: 0,
+        solvedQuestionIds: [],
         mealSlots: createDefaultMealSlots(),
         badges: INITIAL_BADGES.map((b) => ({ ...b, unlocked: false })),
         solvedChallengeIds: [],
@@ -453,17 +514,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 // ---------------------------------------------------------------------------
 function loadInitialState(): GameState {
   const student = loadStoredStudent();
+  const solved = loadSolvedFromStorage(student?.id);
+  const badges = loadBadgesFromStorage(student?.id);
+  const missionsCount = Math.max(student?.completedMissions || 0, solved.length);
 
   return {
     currentStudent: student,
+    guestStarsCount: 0,
+    solvedQuestionIds: [],
     mealSlots: loadMealSlotsFromStorage(student?.id),
     activeMealId: 'breakfast',
     activeScreen: 'meals',
-    badges: loadBadgesFromStorage(student?.id),
-    progressPercentage: student?.completedMissions
-      ? Math.min(100, Math.round((student.completedMissions / 3) * 100))
+    badges,
+    progressPercentage: missionsCount
+      ? Math.min(100, Math.round((missionsCount / 3) * 100))
       : 0,
-    solvedChallengeIds: loadSolvedFromStorage(student?.id),
+    solvedChallengeIds: solved,
     theme: getInitialTheme(),
     isMuted: (() => {
       const muted = loadJson<boolean>(STORAGE_MUTED, false);
