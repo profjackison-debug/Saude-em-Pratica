@@ -67,13 +67,27 @@ export interface LearningBadge {
   progressText: string;
 }
 
+export interface QuizQuestion {
+  id: string;
+  title?: string;
+  question: string;
+  context: string;
+  options: {
+    id: string;
+    text: string;
+    isCorrect: boolean;
+    explanation: string;
+  }[];
+}
+
 export interface MathChallenge {
   id: string;
   title: string;
   area: 'refeicoes' | 'imc' | 'movimento';
-  question: string;
-  context: string;
-  options: {
+  questions: QuizQuestion[];
+  question?: string;
+  context?: string;
+  options?: {
     id: string;
     text: string;
     isCorrect: boolean;
