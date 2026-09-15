@@ -1,8 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { X, Star, CheckCircle2, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { MathChallenge, LearningBadge, AppScreenId, QuizQuestion } from '../types';
+import { MathChallenge, LearningBadge, AppScreenId, QuizQuestion, QuizOption } from '../types';
 import { playClickSound, playStarSound, playFanfare } from '../utils/audio';
+
+function shuffleArray<T>(items: T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 interface MissionModalProps {
   challenges: MathChallenge[];
@@ -32,6 +43,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Record<string, boolean>>({});
+  const [shuffledOptionsMap, setShuffledOptionsMap] = useState<Record<string, QuizOption[]>>({});
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -39,7 +51,29 @@ export const MissionModal: React.FC<MissionModalProps> = ({
     setCurrentQuestionIndex(0);
     setSelectedOptionId(null);
     setHasSubmitted(false);
-  }, [initialChallengeIndex]);
+
+    // Embaralha as alternativas de todas as questões desta missão ao abrir
+    const targetChallenge = challenges[initialChallengeIndex];
+    if (targetChallenge) {
+      const qList: QuizQuestion[] =
+        targetChallenge.questions && targetChallenge.questions.length > 0
+          ? targetChallenge.questions
+          : [
+              {
+                id: targetChallenge.id,
+                title: targetChallenge.title,
+                question: targetChallenge.question || '',
+                context: targetChallenge.context || '',
+                options: targetChallenge.options || [],
+              },
+            ];
+      const initialMap: Record<string, QuizOption[]> = {};
+      qList.forEach((q) => {
+        initialMap[q.id] = shuffleArray(q.options || []);
+      });
+      setShuffledOptionsMap(initialMap);
+    }
+  }, [initialChallengeIndex, challenges]);
 
   useEffect(() => {
     return () => {
@@ -64,7 +98,27 @@ export const MissionModal: React.FC<MissionModalProps> = ({
         ];
 
   const currentQuestion = questions[currentQuestionIndex] || questions[0]!;
-  const selectedOption = currentQuestion.options.find((o) => o.id === selectedOptionId);
+
+  // Alternativas embaralhadas para a questão atual
+  const displayOptions: QuizOption[] = useMemo(() => {
+    if (shuffledOptionsMap[currentQuestion.id]) {
+      return shuffledOptionsMap[currentQuestion.id];
+    }
+    return currentQuestion.options || [];
+  }, [shuffledOptionsMap, currentQuestion]);
+
+  useEffect(() => {
+    if (currentQuestion && !shuffledOptionsMap[currentQuestion.id] && currentQuestion.options?.length) {
+      setShuffledOptionsMap((prev) => ({
+        ...prev,
+        [currentQuestion.id]: shuffleArray(currentQuestion.options),
+      }));
+    }
+  }, [currentQuestion, shuffledOptionsMap]);
+
+  const selectedOption =
+    displayOptions.find((o) => o.id === selectedOptionId) ||
+    (hasSubmitted ? displayOptions.find((o) => o.isCorrect) : undefined);
 
   const getNextScreen = (index: number): { id: AppScreenId; name: string; icon: string } => {
     if (index === 0) {
