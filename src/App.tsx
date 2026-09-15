@@ -131,12 +131,29 @@ export default function App() {
   ).length;
   const areAllFourMealsCompleted = completedMealsCount === 4;
 
-  // Guard: O passo "2. Peso e Saúde" só é acessível se o aluno tiver montado as 4 refeições
+  // Quiz completion per stage
+  const isStep1QuizSolved = solvedChallengeIds.includes('chal-1');
+  const isStep2QuizSolved = solvedChallengeIds.includes('chal-2');
+  const isStep3QuizSolved = solvedChallengeIds.includes('chal-3');
+
+  // Strict pedagogical progression: only advance to next stage after playing & solving current quiz
+  const canAccessWeight = areAllFourMealsCompleted && isStep1QuizSolved;
+  const canAccessActiveWeek = canAccessWeight && isStep2QuizSolved;
+  const canAccessRanking = canAccessActiveWeek && isStep3QuizSolved;
+
+  // Guard: if user is on a locked screen, immediately bounce back to latest accessible screen
   useEffect(() => {
-    if (activeScreen === 'weight' && !areAllFourMealsCompleted) {
+    if (activeScreen === 'weight' && !canAccessWeight) {
       dispatch({ type: 'SET_ACTIVE_SCREEN', screen: 'meals' });
+    } else if (activeScreen === 'active_week' && !canAccessActiveWeek) {
+      dispatch({ type: 'SET_ACTIVE_SCREEN', screen: canAccessWeight ? 'weight' : 'meals' });
+    } else if (activeScreen === 'ranking' && !canAccessRanking) {
+      dispatch({
+        type: 'SET_ACTIVE_SCREEN',
+        screen: canAccessActiveWeek ? 'active_week' : canAccessWeight ? 'weight' : 'meals',
+      });
     }
-  }, [activeScreen, areAllFourMealsCompleted, dispatch]);
+  }, [activeScreen, canAccessWeight, canAccessActiveWeek, canAccessRanking, dispatch]);
 
   return (
     <div className="min-h-screen bg-[#c8ebe6] dark:bg-[#070e1e] bg-gradient-to-br from-[#d4f2ec] via-[#bfebe4] to-[#aae4dc] dark:from-[#060b17] dark:via-[#0c1833] dark:to-[#080f22] text-slate-800 dark:text-slate-100 flex flex-col font-sans p-2 sm:p-4 transition-colors duration-300">
@@ -148,10 +165,19 @@ export default function App() {
         currentStudent={currentStudent}
         solvedMissionsCount={solvedChallengeIds.length}
         totalMissionsCount={MATH_CHALLENGES.length}
-        onStartMission={() => handleStartMission(0)}
+        onStartMission={() => {
+          const missionIdx = activeScreen === 'weight' ? 1 : activeScreen === 'active_week' ? 2 : 0;
+          handleStartMission(missionIdx);
+        }}
         onOpenExportModal={() => setIsExportModalOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenRank={() => {
+          if (!canAccessRanking) {
+            playClickSound();
+            const missionIdx = !canAccessWeight ? 0 : !canAccessActiveWeek ? 1 : 2;
+            handleStartMission(missionIdx);
+            return;
+          }
           playStarSound();
           setActiveScreen('ranking');
         }}
@@ -184,62 +210,121 @@ export default function App() {
             </button>
 
             <button
-              disabled={!areAllFourMealsCompleted}
+              disabled={!canAccessWeight}
               onClick={() => {
-                if (!areAllFourMealsCompleted) return;
+                if (!canAccessWeight) {
+                  if (!areAllFourMealsCompleted) {
+                    playClickSound();
+                  } else if (!isStep1QuizSolved) {
+                    handleStartMission(0);
+                  }
+                  return;
+                }
                 playClickSound();
                 setActiveScreen('weight');
               }}
               title={
                 !areAllFourMealsCompleted
-                  ? `Bloqueado: Monte as 4 refeições no diário antes de avançar (${completedMealsCount}/4 concluídas)`
+                  ? `Bloqueado: Monte as 4 refeições no diário antes (${completedMealsCount}/4 concluídas)`
+                  : !isStep1QuizSolved
+                  ? 'Bloqueado: Responda ao Quiz da Etapa 1 para desbloquear'
                   : '2. Peso e Saúde'
               }
               className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition flex items-center gap-2 ${
-                !areAllFourMealsCompleted
+                !canAccessWeight
                   ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-700'
                   : activeScreen === 'weight'
                   ? 'bg-sky-600 dark:bg-sky-500 text-white shadow-xs cursor-pointer'
                   : 'text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-sky-950/40 cursor-pointer'
               }`}
             >
-              <span className="text-base sm:text-lg">{areAllFourMealsCompleted ? '⚖️' : '🔒'}</span>
+              <span className="text-base sm:text-lg">{canAccessWeight ? '⚖️' : '🔒'}</span>
               <span>2. Peso e Saúde</span>
-              {!areAllFourMealsCompleted && (
+              {!areAllFourMealsCompleted ? (
                 <span className="text-xs bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full font-mono font-bold">
                   {completedMealsCount}/4
+                </span>
+              ) : !isStep1QuizSolved ? (
+                <span className="text-[10px] bg-amber-100 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full font-bold">
+                  Quiz Pendente
+                </span>
+              ) : null}
+            </button>
+
+            <button
+              disabled={!canAccessActiveWeek}
+              onClick={() => {
+                if (!canAccessActiveWeek) {
+                  if (canAccessWeight && !isStep2QuizSolved) {
+                    handleStartMission(1);
+                  } else {
+                    playClickSound();
+                  }
+                  return;
+                }
+                playClickSound();
+                setActiveScreen('active_week');
+              }}
+              title={
+                !canAccessActiveWeek
+                  ? !canAccessWeight
+                    ? 'Bloqueado: Conclua as etapas anteriores primeiro'
+                    : 'Bloqueado: Responda ao Quiz do IMC na Etapa 2 para desbloquear'
+                  : '3. Semana Ativa'
+              }
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition flex items-center gap-2 ${
+                !canAccessActiveWeek
+                  ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-700'
+                  : activeScreen === 'active_week'
+                  ? 'bg-teal-600 dark:bg-blue-500 text-white shadow-xs cursor-pointer'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-teal-50 dark:hover:bg-blue-900/40 cursor-pointer'
+              }`}
+            >
+              <span className="text-base sm:text-lg">{canAccessActiveWeek ? '🏃' : '🔒'}</span>
+              <span>3. Semana Ativa</span>
+              {canAccessWeight && !isStep2QuizSolved && (
+                <span className="text-[10px] bg-amber-100 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full font-bold">
+                  Quiz Pendente
                 </span>
               )}
             </button>
 
             <button
+              disabled={!canAccessRanking}
               onClick={() => {
-                playClickSound();
-                setActiveScreen('active_week');
-              }}
-              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition cursor-pointer flex items-center gap-2 ${
-                activeScreen === 'active_week'
-                  ? 'bg-teal-600 dark:bg-blue-500 text-white shadow-xs'
-                  : 'text-slate-700 dark:text-slate-300 hover:bg-teal-50 dark:hover:bg-blue-900/40'
-              }`}
-            >
-              <span className="text-base sm:text-lg">🏃</span>
-              <span>3. Semana Ativa</span>
-            </button>
-
-            <button
-              onClick={() => {
+                if (!canAccessRanking) {
+                  if (canAccessActiveWeek && !isStep3QuizSolved) {
+                    handleStartMission(2);
+                  } else {
+                    playClickSound();
+                  }
+                  return;
+                }
                 playStarSound();
                 setActiveScreen('ranking');
               }}
-              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition cursor-pointer flex items-center gap-2 ${
-                activeScreen === 'ranking'
-                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 shadow-xs border border-amber-300'
-                  : 'text-amber-900 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800'
+              title={
+                !canAccessRanking
+                  ? !canAccessActiveWeek
+                    ? 'Bloqueado: Conclua as etapas anteriores primeiro'
+                    : 'Bloqueado: Responda ao Quiz de Movimento na Etapa 3 para desbloquear'
+                  : '4. Ranking'
+              }
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition flex items-center gap-2 ${
+                !canAccessRanking
+                  ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-700'
+                  : activeScreen === 'ranking'
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 shadow-xs border border-amber-300 cursor-pointer'
+                  : 'text-amber-900 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 cursor-pointer'
               }`}
             >
-              <span className="text-base sm:text-lg">🏆</span>
+              <span className="text-base sm:text-lg">{canAccessRanking ? '🏆' : '🔒'}</span>
               <span>4. Ranking</span>
+              {canAccessActiveWeek && !isStep3QuizSolved && (
+                <span className="text-[10px] bg-amber-100 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full font-bold">
+                  Quiz Pendente
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -258,8 +343,10 @@ export default function App() {
               onOpenProportionChallenge={() => handleStartMission(0)}
               onLoadMealTemplate={handleLoadMealTemplate}
               isFocusedView={true}
+              isMissionSolved={isStep1QuizSolved}
+              onStartMission={() => handleStartMission(0)}
               onNavigateToWeight={() => {
-                if (!areAllFourMealsCompleted) return;
+                if (!canAccessWeight) return;
                 setActiveScreen('weight');
                 if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
@@ -274,6 +361,12 @@ export default function App() {
               isFocusedView={true}
               consumedKcal={totalDailyKcal}
               consumedGrams={totalDailyGrams}
+              isQuizSolved={isStep2QuizSolved}
+              onNavigateToNext={() => {
+                if (!canAccessActiveWeek) return;
+                setActiveScreen('active_week');
+                if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
           </div>
         )}
@@ -283,6 +376,12 @@ export default function App() {
             <ActiveWeekSection
               onChallengeClick={() => handleStartMission(2)}
               isFocusedView={true}
+              isQuizSolved={isStep3QuizSolved}
+              onNavigateToNext={() => {
+                if (!canAccessRanking) return;
+                setActiveScreen('ranking');
+                if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
           </div>
         )}
@@ -309,6 +408,12 @@ export default function App() {
           }
           onOpenCategory={(cat) => {
             if (cat === 'conquistar') {
+              if (!canAccessRanking) {
+                playClickSound();
+                const missionIdx = !canAccessWeight ? 0 : !canAccessActiveWeek ? 1 : 2;
+                handleStartMission(missionIdx);
+                return;
+              }
               playStarSound();
               setActiveScreen('ranking');
             } else {
@@ -325,10 +430,18 @@ export default function App() {
           initialChallengeIndex={initialChallengeIdx}
           badges={badges}
           solvedChallengeIds={solvedChallengeIds}
+          areAllFourMealsCompleted={areAllFourMealsCompleted}
           onClose={() => setIsMissionModalOpen(false)}
           onSolveChallenge={handleSolveChallenge}
           onUnlockBadge={handleUnlockBadge}
-          onNavigateToScreen={(screen) => setActiveScreen(screen)}
+          onNavigateToScreen={(screen) => {
+            if (screen === 'weight' && !areAllFourMealsCompleted) {
+              setActiveScreen('meals');
+              return;
+            }
+            setActiveScreen(screen);
+            if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
         />
       )}
 

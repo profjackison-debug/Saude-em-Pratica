@@ -9,6 +9,7 @@ interface MissionModalProps {
   initialChallengeIndex?: number;
   badges: LearningBadge[];
   solvedChallengeIds: string[];
+  areAllFourMealsCompleted?: boolean;
   onClose: () => void;
   onSolveChallenge: (challengeId: string) => void;
   onUnlockBadge: (badgeId: string) => void;
@@ -20,6 +21,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   initialChallengeIndex = 0,
   badges,
   solvedChallengeIds,
+  areAllFourMealsCompleted = false,
   onClose,
   onSolveChallenge,
   onUnlockBadge,
@@ -217,15 +219,32 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                 <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-blue-900/60 flex items-center justify-between gap-2 flex-wrap">
                   <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
                     <span>{nextScreen.icon}</span>
-                    <span>Próxima etapa desbloqueada: <strong>{nextScreen.name}</strong></span>
+                    {currentIndex === 0 && !areAllFourMealsCompleted ? (
+                      <span>Quiz concluído! Monte as 4 refeições no Diário para liberar <strong>{nextScreen.name}</strong></span>
+                    ) : (
+                      <span>Próxima etapa desbloqueada: <strong>{nextScreen.name}</strong></span>
+                    )}
                   </span>
-                  <button
-                    onClick={handleAdvanceToNextScreen}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-                  >
-                    <span>Avançar para {nextScreen.name}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  {currentIndex === 0 && !areAllFourMealsCompleted ? (
+                    <button
+                      onClick={() => {
+                        playClickSound();
+                        onClose();
+                      }}
+                      className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <span>🍽️ Ir para o Diário</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleAdvanceToNextScreen}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <span>Avançar para {nextScreen.name}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -249,13 +268,26 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                 Confirmar Resposta
               </button>
             ) : selectedOption?.isCorrect ? (
-              <button
-                onClick={handleAdvanceToNextScreen}
-                className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
-              >
-                <span>🎉 Liberar & Avançar para {nextScreen.name}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              currentIndex === 0 && !areAllFourMealsCompleted ? (
+                <button
+                  onClick={() => {
+                    playClickSound();
+                    onClose();
+                  }}
+                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
+                >
+                  <span>🍽️ Quiz Concluído! Montar as 4 Refeições</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleAdvanceToNextScreen}
+                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
+                >
+                  <span>🎉 Liberar & Avançar para {nextScreen.name}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )
             ) : (
               <button
                 onClick={() => {
