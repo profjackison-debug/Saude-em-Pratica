@@ -1307,8 +1307,8 @@ export const MATH_CHALLENGES: MathChallenge[] = [
     question: 'A proporção clássica recomendada no prato brasileiro é de aproximadamente 2 partes de arroz para 1 parte de feijão (2:1). Se um estudante coloca 160g de arroz cozido, quantos gramas de feijão deve adicionar para manter essa proporção?',
     context: 'Investigação de razões e proporções no almoço.',
     options: [
-      { id: 'a', text: '80 gramas', isCorrect: true, explanation: 'Correto! 160g ÷ 2 = 80g. A razão 160:80 simplifica exatamente para 2:1.' },
       { id: 'b', text: '160 gramas', isCorrect: false, explanation: '160g seria uma proporção 1:1.' },
+      { id: 'a', text: '80 gramas', isCorrect: true, explanation: 'Correto! 160g ÷ 2 = 80g. A razão 160:80 simplifica exatamente para 2:1.' },
       { id: 'c', text: '40 gramas', isCorrect: false, explanation: '40g geraria uma proporção de 4:1.' },
       { id: 'd', text: '320 gramas', isCorrect: false, explanation: '320g seria o dobro de feijão em relação ao arroz (1:2).' },
     ],
@@ -1319,8 +1319,8 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'A proporção clássica recomendada no prato brasileiro é de aproximadamente 2 partes de arroz para 1 parte de feijão (2:1). Se um estudante coloca 160g de arroz cozido, quantos gramas de feijão deve adicionar para manter essa proporção?',
         context: 'Investigação de razões e proporções no almoço tradicional brasileiro.',
         options: [
-          { id: 'a', text: '80 gramas', isCorrect: true, explanation: 'Correto! 160g ÷ 2 = 80g. A razão 160:80 simplifica exatamente para 2:1.' },
           { id: 'b', text: '160 gramas', isCorrect: false, explanation: '160g seria uma proporção 1:1.' },
+          { id: 'a', text: '80 gramas', isCorrect: true, explanation: 'Correto! 160g ÷ 2 = 80g. A razão 160:80 simplifica exatamente para 2:1.' },
           { id: 'c', text: '40 gramas', isCorrect: false, explanation: '40g geraria uma proporção de 4:1.' },
           { id: 'd', text: '320 gramas', isCorrect: false, explanation: '320g seria o dobro de feijão em relação ao arroz (1:2).' },
         ],
@@ -1331,9 +1331,9 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'Em um prato balanceado de 400g no almoço, as recomendações nutricionais indicam que metade (1/2) do prato deve ser composta por legumes e verduras in natura. Quantos gramas de salada e legumes correspondem a essa recomendação?',
         context: 'Guia Alimentar para a População Brasileira e composição do prato visual.',
         options: [
-          { id: 'a', text: '200 gramas', isCorrect: true, explanation: 'Sensacional! 1/2 de 400g = 400 ÷ 2 = 200g, correspondendo exatamente a 50% do prato.' },
-          { id: 'b', text: '150 gramas', isCorrect: false, explanation: '150g equivaleria a 37,5% de 400g.' },
           { id: 'c', text: '100 gramas', isCorrect: false, explanation: '100g seria apenas 1/4 (25%) do prato.' },
+          { id: 'b', text: '150 gramas', isCorrect: false, explanation: '150g equivaleria a 37,5% de 400g.' },
+          { id: 'a', text: '200 gramas', isCorrect: true, explanation: 'Sensacional! 1/2 de 400g = 400 ÷ 2 = 200g, correspondendo exatamente a 50% do prato.' },
           { id: 'd', text: '250 gramas', isCorrect: false, explanation: '250g seria mais da metade do prato (62,5%).' },
         ],
       },
@@ -1343,10 +1343,10 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'Para preparar 1 litro (1.000 ml) de suco natural in natura na merenda escolar, são utilizadas 5 laranjas. Mantendo exatamente a mesma concentração e sabor, quantas laranjas serão necessárias para preparar uma jarra de 2,4 litros?',
         context: 'Proporcionalidade direta aplicada ao preparo de sucos in natura na cantina escolar.',
         options: [
-          { id: 'a', text: '12 laranjas (5 × 2,4 = 12)', isCorrect: true, explanation: 'Perfeito! 5 laranjas/litro × 2,4 litros = 12 laranjas inteiras. Regra de três simples direta perfeita!' },
           { id: 'b', text: '10 laranjas', isCorrect: false, explanation: '10 laranjas renderiam apenas 2,0 litros (10 ÷ 5 = 2).' },
           { id: 'c', text: '15 laranjas', isCorrect: false, explanation: '15 laranjas seriam necessárias para 3,0 litros de suco.' },
           { id: 'd', text: '8 laranjas', isCorrect: false, explanation: '8 laranjas renderiam apenas 1,6 litros.' },
+          { id: 'a', text: '12 laranjas (5 × 2,4 = 12)', isCorrect: true, explanation: 'Perfeito! 5 laranjas/litro × 2,4 litros = 12 laranjas inteiras. Regra de três simples direta perfeita!' },
         ],
       },
       {
@@ -1355,8 +1355,8 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'Uma porção média de 100g de melancia fresca fornece cerca de 30 kcal de energia e hidratação. Se um jovem consome 3 porções iguais no lanche escolar, quantas quilocalorias ele ingeriu dessa fruta?',
         context: 'Relação entre porções consumidas e energia total em quilocalorias.',
         options: [
-          { id: 'a', text: '90 kcal (3 × 30 kcal = 90)', isCorrect: true, explanation: 'Muito bem! 3 porções × 30 kcal = 90 kcal totais e 300g consumidos.' },
           { id: 'b', text: '60 kcal', isCorrect: false, explanation: '60 kcal corresponderia a apenas 2 porções de 100g.' },
+          { id: 'a', text: '90 kcal (3 × 30 kcal = 90)', isCorrect: true, explanation: 'Muito bem! 3 porções × 30 kcal = 90 kcal totais e 300g consumidos.' },
           { id: 'c', text: '120 kcal', isCorrect: false, explanation: '120 kcal equivaleria a 4 porções de 100g.' },
           { id: 'd', text: '30 kcal', isCorrect: false, explanation: '30 kcal é o valor de uma única porção.' },
         ],
@@ -1370,9 +1370,9 @@ export const MATH_CHALLENGES: MathChallenge[] = [
     question: 'Na fórmula do IMC = massa ÷ altura², o que acontece matematicamente com o valor do IMC se a massa permanecer constante e a altura aumentar?',
     context: 'Exploração da fórmula com grandezas inversamente proporcionais ao quadrado.',
     options: [
-      { id: 'a', text: 'O IMC diminui, pois a altura está no denominador ao quadrado.', isCorrect: true, explanation: 'Exato! Como a altura está no denominador, quando ela cresce, o resultado da divisão diminui com taxa quadrática.' },
       { id: 'b', text: 'O IMC aumenta na mesma proporção.', isCorrect: false, explanation: 'A altura está no denominador, então a relação é inversa, não direta.' },
       { id: 'c', text: 'O IMC não se altera.', isCorrect: false, explanation: 'Qualquer mudança na altura altera o denominador da fração.' },
+      { id: 'a', text: 'O IMC diminui, pois a altura está no denominador ao quadrado.', isCorrect: true, explanation: 'Exato! Como a altura está no denominador, quando ela cresce, o resultado da divisão diminui com taxa quadrática.' },
       { id: 'd', text: 'O IMC duplica instantaneamente.', isCorrect: false, explanation: 'A relação é inversa e depende do quadrado da altura.' },
     ],
     questions: [
@@ -1382,9 +1382,9 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'Na fórmula do IMC = massa ÷ (altura)², o que acontece matematicamente com o valor do IMC se a massa permanecer constante e a altura aumentar?',
         context: 'Exploração da fórmula com grandezas inversamente proporcionais ao quadrado da altura.',
         options: [
-          { id: 'a', text: 'O IMC diminui, pois a altura está no denominador ao quadrado.', isCorrect: true, explanation: 'Exato! Como a altura está no denominador, quando ela cresce, o resultado da divisão diminui com taxa quadrática.' },
           { id: 'b', text: 'O IMC aumenta na mesma proporção.', isCorrect: false, explanation: 'A altura está no denominador, então a relação é inversa, não direta.' },
           { id: 'c', text: 'O IMC não se altera.', isCorrect: false, explanation: 'Qualquer mudança na altura altera o denominador da fração.' },
+          { id: 'a', text: 'O IMC diminui, pois a altura está no denominador ao quadrado.', isCorrect: true, explanation: 'Exato! Como a altura está no denominador, quando ela cresce, o resultado da divisão diminui com taxa quadrática.' },
           { id: 'd', text: 'O IMC duplica instantaneamente.', isCorrect: false, explanation: 'A relação é inversa e depende do quadrado da altura.' },
         ],
       },
@@ -1406,8 +1406,8 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'Uma pessoa tem 64 kg de massa corporal e sua altura ao quadrado é exatamente 2,56 m² (altura de 1,60 m). Qual é o IMC dessa pessoa?',
         context: 'Resolução prática de divisão decimal: 64 ÷ 2,56.',
         options: [
-          { id: 'a', text: '25,0 kg/m²', isCorrect: true, explanation: 'Parabéns! 64 ÷ 2,56 = 25,0 kg/m². Uma divisão decimal exata!' },
           { id: 'b', text: '22,5 kg/m²', isCorrect: false, explanation: '64 ÷ 2,56 resulta exatamente em 25,0.' },
+          { id: 'a', text: '25,0 kg/m²', isCorrect: true, explanation: 'Parabéns! 64 ÷ 2,56 = 25,0 kg/m². Uma divisão decimal exata!' },
           { id: 'c', text: '28,4 kg/m²', isCorrect: false, explanation: 'Valor obtido incorretamente na divisão.' },
           { id: 'd', text: '20,0 kg/m²', isCorrect: false, explanation: '20,0 × 2,56 geraria apenas 51,2 kg de massa corporal.' },
         ],
@@ -1418,9 +1418,9 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'De acordo com a tabela do Ministério da Saúde para adultos (20 a 59 anos), a faixa de "Peso Adequado (Eutrofia)" compreende os valores de 18,5 a 24,9 kg/m². Um jovem adulto com IMC de 22,3 kg/m² encontra-se em qual classificação?',
         context: 'Tabela epidemiológica de referência do Ministério da Saúde.',
         options: [
-          { id: 'a', text: 'Peso Adequado (Eutrofia), pois 22,3 está entre 18,5 e 24,9 kg/m².', isCorrect: true, explanation: 'Perfeito! O valor 22,3 pertence ao intervalo fechado [18,5 ; 24,9], indicando adequação nutricional.' },
           { id: 'b', text: 'Abaixo do peso (IMC menor que 18,5).', isCorrect: false, explanation: 'Abaixo do peso refere-se a valores estritamente menores que 18,5.' },
           { id: 'c', text: 'Sobrepeso (IMC de 25,0 a 29,9).', isCorrect: false, explanation: 'Sobrepeso inicia a partir de 25,0 kg/m².' },
+          { id: 'a', text: 'Peso Adequado (Eutrofia), pois 22,3 está entre 18,5 e 24,9 kg/m².', isCorrect: true, explanation: 'Perfeito! O valor 22,3 pertence ao intervalo fechado [18,5 ; 24,9], indicando adequação nutricional.' },
           { id: 'd', text: 'Obesidade Grau I (IMC a partir de 30,0).', isCorrect: false, explanation: 'Obesidade inicia a partir de 30,0 kg/m².' },
         ],
       },
@@ -1433,9 +1433,9 @@ export const MATH_CHALLENGES: MathChallenge[] = [
     question: 'A OMS recomenda pelo menos 60 minutos diários de atividade física para jovens. Se uma turma somou 420 minutos ativos distribuídos nos 7 dias da semana, qual foi a média diária alcançada?',
     context: 'Cálculo de média aritmética semanal de movimento.',
     options: [
-      { id: 'a', text: '60 minutos por dia (420 ÷ 7 = 60)', isCorrect: true, explanation: 'Parabéns! 420 minutos divididos por 7 dias resulta exatamente em 60 minutos diários de média!' },
       { id: 'b', text: '50 minutos por dia', isCorrect: false, explanation: '50 × 7 seria 350 minutos, menos do que os 420 somados.' },
       { id: 'c', text: '70 minutos por dia', isCorrect: false, explanation: '70 × 7 resultaria em 490 minutos.' },
+      { id: 'a', text: '60 minutos por dia (420 ÷ 7 = 60)', isCorrect: true, explanation: 'Parabéns! 420 minutos divididos por 7 dias resulta exatamente em 60 minutos diários de média!' },
       { id: 'd', text: '42 minutos por dia', isCorrect: false, explanation: '42 minutos por dia somaria apenas 294 minutos na semana.' },
     ],
     questions: [
@@ -1445,8 +1445,8 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'A OMS recomenda pelo menos 60 minutos diários de atividade física para jovens. Se uma turma somou 420 minutos ativos distribuídos nos 7 dias da semana, qual foi a média diária alcançada?',
         context: 'Cálculo de média aritmética semanal de movimento: soma total ÷ número de dias.',
         options: [
-          { id: 'a', text: '60 minutos por dia (420 ÷ 7 = 60)', isCorrect: true, explanation: 'Parabéns! 420 minutos divididos por 7 dias resulta exatamente em 60 minutos diários de média!' },
           { id: 'b', text: '50 minutos por dia', isCorrect: false, explanation: '50 × 7 seria 350 minutos, menos do que os 420 somados.' },
+          { id: 'a', text: '60 minutos por dia (420 ÷ 7 = 60)', isCorrect: true, explanation: 'Parabéns! 420 minutos divididos por 7 dias resulta exatamente em 60 minutos diários de média!' },
           { id: 'c', text: '70 minutos por dia', isCorrect: false, explanation: '70 × 7 resultaria em 490 minutos.' },
           { id: 'd', text: '42 minutos por dia', isCorrect: false, explanation: '42 minutos por dia somaria apenas 294 minutos na semana.' },
         ],
@@ -1457,8 +1457,8 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'Se um jovem planeja praticar uma média de 60 minutos de atividade física nos 5 dias letivos de aula (segunda a sexta-feira), quantos minutos de movimento ele precisa acumular no total desses 5 dias?',
         context: 'Multiplicação e planejamento de tempo: dias × média desejada.',
         options: [
-          { id: 'a', text: '300 minutos (5 × 60 = 300)', isCorrect: true, explanation: 'Sensacional! 5 dias × 60 minutos = 300 minutos de movimento, o equivalente a 5 horas ativas na semana!' },
           { id: 'b', text: '240 minutos', isCorrect: false, explanation: '240 minutos resultaria em média de 48 min/dia (240 ÷ 5 = 48).' },
+          { id: 'a', text: '300 minutos (5 × 60 = 300)', isCorrect: true, explanation: 'Sensacional! 5 dias × 60 minutos = 300 minutos de movimento, o equivalente a 5 horas ativas na semana!' },
           { id: 'c', text: '360 minutos', isCorrect: false, explanation: '360 minutos equivaleria a 6 dias com 60 minutos cada.' },
           { id: 'd', text: '180 minutos', isCorrect: false, explanation: '180 minutos daria apenas 36 minutos diários de média.' },
         ],
@@ -1469,9 +1469,9 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'Durante a semana escolar, um estudante acumulou 1 hora e 45 minutos de caminhada, esportes e dança. Quantos minutos totais essa duração representa?',
         context: 'Conversão entre horas e minutos: 1 hora = 60 minutos.',
         options: [
-          { id: 'a', text: '105 minutos (60 + 45 = 105)', isCorrect: true, explanation: 'Correto! 1 hora tem 60 minutos. Somando com 45 minutos: 60 + 45 = 105 minutos.' },
           { id: 'b', text: '145 minutos', isCorrect: false, explanation: 'Atenção: 1 hora tem 60 minutos, e não 100 minutos!' },
           { id: 'c', text: '95 minutos', isCorrect: false, explanation: '60 + 45 = 105 minutos, não 95.' },
+          { id: 'a', text: '105 minutos (60 + 45 = 105)', isCorrect: true, explanation: 'Correto! 1 hora tem 60 minutos. Somando com 45 minutos: 60 + 45 = 105 minutos.' },
           { id: 'd', text: '75 minutos', isCorrect: false, explanation: '75 minutos corresponderia a 1 hora e 15 minutos.' },
         ],
       },
@@ -1481,9 +1481,9 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         question: 'A OMS recomenda que jovens façam atividades de fortalecimento muscular em pelo menos 3 dos 7 dias da semana. Qual fração irredutível representa esses 3 dias em relação à semana inteira?',
         context: 'Diretriz da OMS e representação fracionária em relação ao total da semana.',
         options: [
-          { id: 'a', text: '3/7 (três sétimos)', isCorrect: true, explanation: 'Exato! A semana tem 7 dias e a meta mínima é de 3 dias, formando a fração irredutível 3/7.' },
           { id: 'b', text: '3/5 (três quintos)', isCorrect: false, explanation: 'A semana tem 7 dias no denominador, não 5.' },
           { id: 'c', text: '1/2 (metade)', isCorrect: false, explanation: 'Metade da semana de 7 dias seria 3,5 dias.' },
+          { id: 'a', text: '3/7 (três sétimos)', isCorrect: true, explanation: 'Exato! A semana tem 7 dias e a meta mínima é de 3 dias, formando a fração irredutível 3/7.' },
           { id: 'd', text: '3/10 (três décimos)', isCorrect: false, explanation: 'O denominador correto para a semana é 7.' },
         ],
       },
