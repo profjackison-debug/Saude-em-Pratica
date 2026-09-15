@@ -1432,7 +1432,7 @@ export const MATH_CHALLENGES: MathChallenge[] = [
           { id: 'b', text: '10 laranjas', isCorrect: false, explanation: '10 laranjas renderiam apenas 2,0 litros (10 ÷ 5 = 2).' },
           { id: 'c', text: '15 laranjas', isCorrect: false, explanation: '15 laranjas seriam necessárias para 3,0 litros de suco.' },
           { id: 'd', text: '8 laranjas', isCorrect: false, explanation: '8 laranjas renderiam apenas 1,6 litros.' },
-          { id: 'a', text: '12 laranjas (5 × 2,4 = 12)', isCorrect: true, explanation: 'Perfeito! 5 laranjas/litro × 2,4 litros = 12 laranjas inteiras. Regra de três simples direta perfeita!' },
+          { id: 'a', text: '12 laranjas', isCorrect: true, explanation: 'Perfeito! 5 laranjas/litro × 2,4 litros = 12 laranjas inteiras. Regra de três simples direta perfeita!' },
         ],
       },
       {
@@ -1442,7 +1442,7 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         context: 'Relação entre porções consumidas e energia total em quilocalorias.',
         options: [
           { id: 'b', text: '60 kcal', isCorrect: false, explanation: '60 kcal corresponderia a apenas 2 porções de 100g.' },
-          { id: 'a', text: '90 kcal (3 × 30 kcal = 90)', isCorrect: true, explanation: 'Muito bem! 3 porções × 30 kcal = 90 kcal totais e 300g consumidos.' },
+          { id: 'a', text: '90 kcal', isCorrect: true, explanation: 'Muito bem! 3 porções × 30 kcal = 90 kcal totais e 300g consumidos.' },
           { id: 'c', text: '120 kcal', isCorrect: false, explanation: '120 kcal equivaleria a 4 porções de 100g.' },
           { id: 'd', text: '30 kcal', isCorrect: false, explanation: '30 kcal é o valor de uma única porção.' },
         ],
@@ -1506,7 +1506,7 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         options: [
           { id: 'b', text: 'Abaixo do peso (IMC menor que 18,5).', isCorrect: false, explanation: 'Abaixo do peso refere-se a valores estritamente menores que 18,5.' },
           { id: 'c', text: 'Sobrepeso (IMC de 25,0 a 29,9).', isCorrect: false, explanation: 'Sobrepeso inicia a partir de 25,0 kg/m².' },
-          { id: 'a', text: 'Peso Adequado (Eutrofia), pois 22,3 está entre 18,5 e 24,9 kg/m².', isCorrect: true, explanation: 'Perfeito! O valor 22,3 pertence ao intervalo fechado [18,5 ; 24,9], indicando adequação nutricional.' },
+          { id: 'a', text: 'Peso Adequado ou Eutrofia (IMC de 18,5 a 24,9).', isCorrect: true, explanation: 'Perfeito! O valor 22,3 pertence ao intervalo [18,5 ; 24,9], indicando adequação nutricional (peso adequado).' },
           { id: 'd', text: 'Obesidade Grau I (IMC a partir de 30,0).', isCorrect: false, explanation: 'Obesidade inicia a partir de 30,0 kg/m².' },
         ],
       },
@@ -1521,7 +1521,7 @@ export const MATH_CHALLENGES: MathChallenge[] = [
     options: [
       { id: 'b', text: '50 minutos por dia', isCorrect: false, explanation: '50 × 7 seria 350 minutos, menos do que os 420 somados.' },
       { id: 'c', text: '70 minutos por dia', isCorrect: false, explanation: '70 × 7 resultaria em 490 minutos.' },
-      { id: 'a', text: '60 minutos por dia (420 ÷ 7 = 60)', isCorrect: true, explanation: 'Parabéns! 420 minutos divididos por 7 dias resulta exatamente em 60 minutos diários de média!' },
+      { id: 'a', text: '60 minutos por dia', isCorrect: true, explanation: 'Parabéns! 420 minutos divididos por 7 dias resulta exatamente em 60 minutos diários de média!' },
       { id: 'd', text: '42 minutos por dia', isCorrect: false, explanation: '42 minutos por dia somaria apenas 294 minutos na semana.' },
     ],
     questions: [
@@ -1532,7 +1532,7 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         context: 'Cálculo de média aritmética semanal de movimento: soma total ÷ número de dias.',
         options: [
           { id: 'b', text: '50 minutos por dia', isCorrect: false, explanation: '50 × 7 seria 350 minutos, menos do que os 420 somados.' },
-          { id: 'a', text: '60 minutos por dia (420 ÷ 7 = 60)', isCorrect: true, explanation: 'Parabéns! 420 minutos divididos por 7 dias resulta exatamente em 60 minutos diários de média!' },
+          { id: 'a', text: '60 minutos por dia', isCorrect: true, explanation: 'Parabéns! 420 minutos divididos por 7 dias resulta exatamente em 60 minutos diários de média!' },
           { id: 'c', text: '70 minutos por dia', isCorrect: false, explanation: '70 × 7 resultaria em 490 minutos.' },
           { id: 'd', text: '42 minutos por dia', isCorrect: false, explanation: '42 minutos por dia somaria apenas 294 minutos na semana.' },
         ],
@@ -1544,7 +1544,7 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         context: 'Multiplicação e planejamento de tempo: dias × média desejada.',
         options: [
           { id: 'b', text: '240 minutos', isCorrect: false, explanation: '240 minutos resultaria em média de 48 min/dia (240 ÷ 5 = 48).' },
-          { id: 'a', text: '300 minutos (5 × 60 = 300)', isCorrect: true, explanation: 'Sensacional! 5 dias × 60 minutos = 300 minutos de movimento, o equivalente a 5 horas ativas na semana!' },
+          { id: 'a', text: '300 minutos', isCorrect: true, explanation: 'Sensacional! 5 dias × 60 minutos = 300 minutos de movimento, o equivalente a 5 horas ativas na semana!' },
           { id: 'c', text: '360 minutos', isCorrect: false, explanation: '360 minutos equivaleria a 6 dias com 60 minutos cada.' },
           { id: 'd', text: '180 minutos', isCorrect: false, explanation: '180 minutos daria apenas 36 minutos diários de média.' },
         ],
@@ -1557,7 +1557,7 @@ export const MATH_CHALLENGES: MathChallenge[] = [
         options: [
           { id: 'b', text: '145 minutos', isCorrect: false, explanation: 'Atenção: 1 hora tem 60 minutos, e não 100 minutos!' },
           { id: 'c', text: '95 minutos', isCorrect: false, explanation: '60 + 45 = 105 minutos, não 95.' },
-          { id: 'a', text: '105 minutos (60 + 45 = 105)', isCorrect: true, explanation: 'Correto! 1 hora tem 60 minutos. Somando com 45 minutos: 60 + 45 = 105 minutos.' },
+          { id: 'a', text: '105 minutos', isCorrect: true, explanation: 'Correto! 1 hora tem 60 minutos. Somando com 45 minutos: 60 + 45 = 105 minutos.' },
           { id: 'd', text: '75 minutos', isCorrect: false, explanation: '75 minutos corresponderia a 1 hora e 15 minutos.' },
         ],
       },

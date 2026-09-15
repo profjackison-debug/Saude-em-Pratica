@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { X, Star, CheckCircle2, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
+import { X, Star, CheckCircle2, AlertCircle, Sparkles, ArrowRight, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { MathChallenge, LearningBadge, AppScreenId, QuizQuestion, QuizOption } from '../types';
 import { playClickSound, playStarSound, playFanfare } from '../utils/audio';
@@ -8,7 +8,9 @@ function shuffleArray<T>(items: T[]): T[] {
   const arr = [...items];
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [arr[j], arr[j]] = [arr[j], arr[i]];
+    const temp = arr[i]!;
+    arr[i] = arr[j]!;
+    arr[j] = temp;
   }
   return arr;
 }
@@ -134,8 +136,9 @@ export const MissionModal: React.FC<MissionModalProps> = ({
       setCurrentQuestionIndex(targetIdx);
 
       const activeQ = qList[targetIdx];
-      if (activeQ && saved[activeQ.id]) {
-        setSelectedOptionId(saved[activeQ.id].selectedOptionId);
+      const savedRecord = activeQ ? saved[activeQ.id] : undefined;
+      if (activeQ && savedRecord) {
+        setSelectedOptionId(savedRecord.selectedOptionId);
         setHasSubmitted(true);
       } else {
         setSelectedOptionId(null);
@@ -175,10 +178,14 @@ export const MissionModal: React.FC<MissionModalProps> = ({
 
   const currentQuestion = questions[currentQuestionIndex] || questions[0]!;
 
-  // Alternativas embaralhadas para a questão atual
+  // Alternativas embaralhadas para a questão atual com validação estrita anti-duplicação
   const displayOptions: QuizOption[] = useMemo(() => {
-    if (shuffledOptionsMap[currentQuestion.id]) {
-      return shuffledOptionsMap[currentQuestion.id];
+    const candidate = shuffledOptionsMap[currentQuestion.id];
+    if (candidate && candidate.length === currentQuestion.options.length) {
+      const uniqueIds = new Set(candidate.map((o) => o.id));
+      if (uniqueIds.size === currentQuestion.options.length) {
+        return candidate;
+      }
     }
     return currentQuestion.options || [];
   }, [shuffledOptionsMap, currentQuestion]);
@@ -306,6 +313,23 @@ export const MissionModal: React.FC<MissionModalProps> = ({
     }
 
     handleSelectQuestion(nextIdx);
+  };
+
+  const handleRetryQuestion = () => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    playClickSound();
+    const updatedAnswers = { ...userAnswers };
+    delete updatedAnswers[currentQuestion.id];
+    setUserAnswers(updatedAnswers);
+    saveQuizAnswersToStorage(updatedAnswers, studentId);
+    setSelectedOptionId(null);
+    setHasSubmitted(false);
+    if (currentQuestion.options?.length) {
+      setShuffledOptionsMap((prev) => ({
+        ...prev,
+        [currentQuestion.id]: shuffleArray(currentQuestion.options),
+      }));
+    }
   };
 
   const handleCloseModal = () => {
@@ -511,51 +535,77 @@ export const MissionModal: React.FC<MissionModalProps> = ({
               {/* Action Inside Feedback */}
               <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-blue-900/60 flex items-center justify-between gap-2 flex-wrap">
                 {allCompleted ? (
-                  currentIndex === 0 && !areAllFourMealsCompleted ? (
-                    <>
-                      <span className="text-xs font-black text-slate-800 dark:text-slate-200">
-                        Missão concluída! Monte as 4 refeições no Diário para liberar <strong>{nextScreen.name}</strong>
-                      </span>
-                      <button
-                        onClick={() => {
-                          playClickSound();
-                          onClose();
-                        }}
-                        className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        <span>🍽️ Ir para o Diário</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                        <span>{nextScreen.icon}</span>
-                        <span>Próxima etapa desbloqueada: <strong>{nextScreen.name}</strong></span>
-                      </span>
-                      <button
-                        onClick={handleAdvanceToNextScreen}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer animate-pulse"
-                      >
-                        <span>Avançar para {nextScreen.name}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </>
-                  )
+                  <>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {!selectedOption.isCorrect && (
+                        <button
+                          type="button"
+                          onClick={handleRetryQuestion}
+                          className="bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Tentar Novamente esta Questão</span>
+                        </button>
+                      )}
+                    </div>
+                    {currentIndex === 0 && !areAllFourMealsCompleted ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                          Missão concluída! Monte as 4 refeições no Diário para liberar <strong>{nextScreen.name}</strong>
+                        </span>
+                        <button
+                          onClick={() => {
+                            playClickSound();
+                            onClose();
+                          }}
+                          className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                        >
+                          <span>🍽️ Ir para o Diário</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                          <span>{nextScreen.icon}</span>
+                          <span>Próxima etapa desbloqueada: <strong>{nextScreen.name}</strong></span>
+                        </span>
+                        <button
+                          onClick={handleAdvanceToNextScreen}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer animate-pulse"
+                        >
+                          <span>Avançar para {nextScreen.name}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <>
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                       {selectedOption.isCorrect
                         ? `Pergunta ${currentQuestionIndex + 1} acertada! Continue para somar pontos.`
-                        : `Resposta registrada. Siga para a próxima pergunta para pontuar no Ranking!`}
+                        : `Resposta registrada. Tente novamente para acertar ou siga para a próxima:`}
                     </span>
-                    <button
-                      onClick={handleNextQuestion}
-                      className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-                    >
-                      <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {!selectedOption.isCorrect && (
+                        <button
+                          type="button"
+                          onClick={handleRetryQuestion}
+                          className="bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Tentar Novamente</span>
+                        </button>
+                      )}
+                      <button
+                        onClick={handleNextQuestion}
+                        className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </>
                 )}
               </div>
@@ -583,35 +633,49 @@ export const MissionModal: React.FC<MissionModalProps> = ({
               >
                 Confirmar Resposta
               </button>
-            ) : allCompleted ? (
-              currentIndex === 0 && !areAllFourMealsCompleted ? (
-                <button
-                  onClick={() => {
-                    playClickSound();
-                    onClose();
-                  }}
-                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
-                >
-                  <span>🍽️ Missão Concluída! Montar as 4 Refeições</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              ) : (
-                <button
-                  onClick={handleAdvanceToNextScreen}
-                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md animate-pulse"
-                >
-                  <span>🎉 Concluir Missão & Avançar para {nextScreen.name}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              )
             ) : (
-              <button
-                onClick={handleNextQuestion}
-                className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
-              >
-                <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              <>
+                {!selectedOption?.isCorrect && (
+                  <button
+                    type="button"
+                    onClick={handleRetryQuestion}
+                    className="bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs sm:text-sm px-4 py-2.5 rounded-xl flex items-center gap-1.5 cursor-pointer shadow-md transition"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    <span>Tentar Novamente</span>
+                  </button>
+                )}
+                {allCompleted ? (
+                  currentIndex === 0 && !areAllFourMealsCompleted ? (
+                    <button
+                      onClick={() => {
+                        playClickSound();
+                        onClose();
+                      }}
+                      className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
+                    >
+                      <span>🍽️ Montar as 4 Refeições</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleAdvanceToNextScreen}
+                      className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md animate-pulse"
+                    >
+                      <span>🎉 Concluir Missão & Avançar</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  )
+                ) : (
+                  <button
+                    onClick={handleNextQuestion}
+                    className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
+                  >
+                    <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
