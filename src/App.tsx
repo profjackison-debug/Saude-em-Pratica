@@ -288,44 +288,6 @@ export default function App() {
                 </span>
               )}
             </button>
-
-            <button
-              disabled={!canAccessRanking}
-              onClick={() => {
-                if (!canAccessRanking) {
-                  if (canAccessActiveWeek && !isStep3QuizSolved) {
-                    handleStartMission(2);
-                  } else {
-                    playClickSound();
-                  }
-                  return;
-                }
-                playStarSound();
-                setActiveScreen('ranking');
-              }}
-              title={
-                !canAccessRanking
-                  ? !canAccessActiveWeek
-                    ? 'Bloqueado: Conclua as etapas anteriores primeiro'
-                    : 'Bloqueado: Responda ao Quiz de Movimento na Etapa 3 para desbloquear'
-                  : '4. Ranking'
-              }
-              className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition flex items-center gap-2 ${
-                !canAccessRanking
-                  ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-700'
-                  : activeScreen === 'ranking'
-                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 shadow-xs border border-amber-300 cursor-pointer'
-                  : 'text-amber-900 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-800 cursor-pointer'
-              }`}
-            >
-              <span className="text-base sm:text-lg">{canAccessRanking ? '🏆' : '🔒'}</span>
-              <span>4. Ranking</span>
-              {canAccessActiveWeek && !isStep3QuizSolved && (
-                <span className="text-[10px] bg-amber-100 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full font-bold">
-                  Quiz Pendente
-                </span>
-              )}
-            </button>
           </div>
         </div>
 
