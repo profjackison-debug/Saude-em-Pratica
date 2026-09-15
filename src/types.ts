@@ -67,17 +67,19 @@ export interface LearningBadge {
   progressText: string;
 }
 
+export interface QuizOption {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+  explanation: string;
+}
+
 export interface QuizQuestion {
   id: string;
   title?: string;
   question: string;
   context: string;
-  options: {
-    id: string;
-    text: string;
-    isCorrect: boolean;
-    explanation: string;
-  }[];
+  options: QuizOption[];
 }
 
 export interface MathChallenge {
@@ -87,12 +89,7 @@ export interface MathChallenge {
   questions: QuizQuestion[];
   question?: string;
   context?: string;
-  options?: {
-    id: string;
-    text: string;
-    isCorrect: boolean;
-    explanation: string;
-  }[];
+  options?: QuizOption[];
 }
 
 export type AppScreenId = 'meals' | 'weight' | 'active_week' | 'ranking';
