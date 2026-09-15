@@ -155,37 +155,6 @@ export function loadBadgesFromStorage(studentId?: string | null): LearningBadge[
       }
     }
 
-    // Se o estudante tem missões concluídas no perfil ou no solvedStorage, garantir que todas as 4 medalhas de cada missão estão desbloqueadas
-    const solvedChallenges = loadSolvedFromStorage(studentId);
-    const activeStudent = loadStoredStudent();
-    const targetStudent =
-      (activeStudent && (!studentId || activeStudent.id === studentId))
-        ? activeStudent
-        : loadSavedStudentsList().find((s) => s.id === studentId);
-    const completedCount = Math.max(
-      targetStudent?.completedMissions || 0,
-      solvedChallenges.length
-    );
-
-    if (completedCount >= 1 || solvedChallenges.includes('chal-1')) {
-      storedMap['badge-investigacao'] = true;
-      storedMap['badge-prato-verde'] = true;
-      storedMap['badge-regra-tres'] = true;
-      storedMap['badge-nutri-energia'] = true;
-    }
-    if (completedCount >= 2 || solvedChallenges.includes('chal-2')) {
-      storedMap['badge-grandezas-imc'] = true;
-      storedMap['badge-potenciacao'] = true;
-      storedMap['badge-divisao-decimal'] = true;
-      storedMap['badge-colaboracao'] = true;
-    }
-    if (completedCount >= 3 || solvedChallenges.includes('chal-3')) {
-      storedMap['badge-participacao'] = true;
-      storedMap['badge-estrategista-movimento'] = true;
-      storedMap['badge-tempo-ativo'] = true;
-      storedMap['badge-constancia-semanal'] = true;
-    }
-
     return INITIAL_BADGES.map((b) => ({
       ...b,
       unlocked: Boolean(storedMap[b.id]),

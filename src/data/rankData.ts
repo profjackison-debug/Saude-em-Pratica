@@ -60,12 +60,14 @@ export const purgeAllStudents = (): void => {
           k &&
           (k.startsWith('saude_pratica_badges_student_') ||
             k.startsWith('saude_pratica_solved_student_') ||
-            k.startsWith('saude_pratica_meals_student_'))
+            k.startsWith('saude_pratica_meals_student_') ||
+            k.startsWith('saude_pratica_quiz_answers_'))
         ) {
           toRemove.push(k);
         }
       }
       toRemove.forEach((k) => localStorage.removeItem(k));
+      localStorage.removeItem('saude_pratica_quiz_answers_guest_v1');
       localStorage.setItem(PURGE_FLAG_KEY, 'true');
     }
   } catch {
@@ -101,8 +103,8 @@ export const loadStoredStudent = (): StudentProfile | null => {
         }
         const completedMissions = Number.isFinite(parsed.completedMissions) ? Math.max(0, parsed.completedMissions) : 0;
         const currentStars = Number.isFinite(parsed.starsCount) ? Math.max(0, parsed.starsCount) : 0;
-        const finalStars = Math.max(currentStars, completedMissions * 4);
-        const currentScore = Number.isFinite(parsed.score) ? Math.max(0, parsed.score) : 0;
+        const finalStars = currentStars;
+        const currentScore = Number.isFinite(parsed.score) ? Math.max(0, parsed.score) : finalStars * 100;
         const finalScore = Math.max(currentScore, finalStars * 100);
 
         return {
@@ -190,8 +192,8 @@ export const loadSavedStudentsList = (): StudentProfile[] => {
           .map((s) => {
             const completedMissions = Number.isFinite(s.completedMissions) ? Math.max(0, s.completedMissions) : 0;
             const currentStars = Number.isFinite(s.starsCount) ? Math.max(0, s.starsCount) : 0;
-            const finalStars = Math.max(currentStars, completedMissions * 4);
-            const currentScore = Number.isFinite(s.score) ? Math.max(0, s.score) : 0;
+            const finalStars = currentStars;
+            const currentScore = Number.isFinite(s.score) ? Math.max(0, s.score) : finalStars * 100;
             const finalScore = Math.max(currentScore, finalStars * 100);
 
             return {
