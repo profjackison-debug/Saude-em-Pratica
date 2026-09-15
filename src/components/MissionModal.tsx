@@ -15,6 +15,29 @@ function shuffleArray<T>(items: T[]): T[] {
 
 const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
+export const QUESTION_BADGE_MAP: Record<string, string> = {
+  // Missão 1 (Refeições - 4 questões / 4 medalhas)
+  'chal-1-q1': 'badge-investigacao',
+  'chal-1-q2': 'badge-prato-verde',
+  'chal-1-q3': 'badge-regra-tres',
+  'chal-1-q4': 'badge-nutri-energia',
+  'chal-1': 'badge-investigacao',
+
+  // Missão 2 (IMC - 4 questões / 4 medalhas)
+  'chal-2-q1': 'badge-grandezas-imc',
+  'chal-2-q2': 'badge-potenciacao',
+  'chal-2-q3': 'badge-divisao-decimal',
+  'chal-2-q4': 'badge-colaboracao',
+  'chal-2': 'badge-grandezas-imc',
+
+  // Missão 3 (Movimento - 4 questões / 4 medalhas)
+  'chal-3-q1': 'badge-participacao',
+  'chal-3-q2': 'badge-estrategista-movimento',
+  'chal-3-q3': 'badge-tempo-ativo',
+  'chal-3-q4': 'badge-constancia-semanal',
+  'chal-3': 'badge-participacao',
+};
+
 interface MissionModalProps {
   challenges: MathChallenge[];
   initialChallengeIndex?: number;
@@ -24,6 +47,7 @@ interface MissionModalProps {
   onClose: () => void;
   onSolveChallenge: (challengeId: string) => void;
   onUnlockBadge: (badgeId: string) => void;
+  onAwardQuestionStar?: (questionId: string, badgeId?: string) => void;
   onNavigateToScreen?: (screen: AppScreenId) => void;
 }
 
@@ -36,6 +60,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   onClose,
   onSolveChallenge,
   onUnlockBadge,
+  onAwardQuestionStar,
   onNavigateToScreen,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialChallengeIndex);
