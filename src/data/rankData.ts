@@ -49,13 +49,20 @@ export const loadStoredStudent = (): StudentProfile | null => {
           localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT);
           return null;
         }
+        const completedMissions = Number.isFinite(parsed.completedMissions) ? Math.max(0, parsed.completedMissions) : 0;
+        const currentStars = Number.isFinite(parsed.starsCount) ? Math.max(0, parsed.starsCount) : 0;
+        // Cada missão concluída vale 4 perguntas/estrelas (totalizando 12 estrelas no jogo)
+        const finalStars = Math.max(currentStars, completedMissions * 4);
+        const currentScore = Number.isFinite(parsed.score) ? Math.max(0, parsed.score) : 0;
+        const finalScore = Math.max(currentScore, finalStars * 100);
+
         return {
           ...parsed,
           name: parsed.name.trim().slice(0, 40),
           school: (parsed.school || 'CETi Agostinho Ernesto de Almeida').trim().slice(0, 50),
-          starsCount: Number.isFinite(parsed.starsCount) ? Math.max(0, parsed.starsCount) : 0,
-          score: Number.isFinite(parsed.score) ? Math.max(0, parsed.score) : 0,
-          completedMissions: Number.isFinite(parsed.completedMissions) ? Math.max(0, parsed.completedMissions) : 0,
+          starsCount: finalStars,
+          score: finalScore,
+          completedMissions,
         };
       }
     }
@@ -117,14 +124,22 @@ export const loadSavedStudentsList = (): StudentProfile[] => {
                 s.name !== 'Lucas Estudante'
               )
           )
-          .map((s) => ({
-            ...s,
-            name: s.name.trim().slice(0, 40),
-            school: (s.school || 'CETi Agostinho Ernesto de Almeida').trim().slice(0, 50),
-            starsCount: Number.isFinite(s.starsCount) ? Math.max(0, s.starsCount) : 0,
-            score: Number.isFinite(s.score) ? Math.max(0, s.score) : 0,
-            completedMissions: Number.isFinite(s.completedMissions) ? Math.max(0, s.completedMissions) : 0,
-          }));
+          .map((s) => {
+            const completedMissions = Number.isFinite(s.completedMissions) ? Math.max(0, s.completedMissions) : 0;
+            const currentStars = Number.isFinite(s.starsCount) ? Math.max(0, s.starsCount) : 0;
+            const finalStars = Math.max(currentStars, completedMissions * 4);
+            const currentScore = Number.isFinite(s.score) ? Math.max(0, s.score) : 0;
+            const finalScore = Math.max(currentScore, finalStars * 100);
+
+            return {
+              ...s,
+              name: s.name.trim().slice(0, 40),
+              school: (s.school || 'CETi Agostinho Ernesto de Almeida').trim().slice(0, 50),
+              starsCount: finalStars,
+              score: finalScore,
+              completedMissions,
+            };
+          });
 
         if (cleaned.length !== parsed.length) {
           localStorage.setItem(LOCAL_STORAGE_KEY_ALL_STUDENTS, JSON.stringify(cleaned));
