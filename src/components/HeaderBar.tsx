@@ -162,30 +162,34 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 playStarSound();
                 onOpenRank();
               }}
-              className="flex items-center gap-2 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-amber-950 font-black px-3.5 py-2 rounded-2xl shadow-sm border border-amber-300 transition cursor-pointer hover:scale-102"
-              title="Abrir Ranking e Hall da Fama da Turma"
+              className="p-2 sm:p-2.5 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-amber-950 rounded-2xl shadow-sm border border-amber-300 transition cursor-pointer hover:scale-105 flex items-center justify-center"
+              title="Abrir Ranking da Turma"
+              aria-label="Abrir Ranking"
             >
-              <Trophy className="w-4.5 h-4.5 fill-amber-950/20 text-amber-950" />
-              <span className="text-xs sm:text-sm font-black">Ranking</span>
+              <Trophy className="w-5 h-5 fill-amber-950/20 text-amber-950" />
             </button>
           )}
 
           {/* Estrelas */}
-          <div className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 px-3.5 py-1.5 rounded-2xl shadow-xs">
+          <div
+            className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 px-3 py-1.5 rounded-2xl shadow-xs"
+            title={`${starsCount ?? 0} estrelas`}
+          >
             <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-white shadow-xs">
               <Star className="w-4 h-4 fill-white text-white" />
             </div>
             <span className="text-sm sm:text-base font-black">{starsCount ?? 0}</span>
-            <span className="text-xs sm:text-sm font-bold text-amber-800 dark:text-amber-300">estrelas</span>
           </div>
 
           {/* Medalhas */}
-          <div className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-200 dark:border-blue-700/60 text-slate-800 dark:text-slate-200 px-3.5 py-1.5 rounded-2xl shadow-xs">
+          <div
+            className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-200 dark:border-blue-700/60 text-slate-800 dark:text-slate-200 px-3 py-1.5 rounded-2xl shadow-xs"
+            title={`${unlockedBadgesCount} medalhas`}
+          >
             <div className="w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-xs">
               <Award className="w-4 h-4 text-white" />
             </div>
             <span className="text-sm sm:text-base font-black">{unlockedBadgesCount}</span>
-            <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">medalhas</span>
           </div>
 
           {/* Student Profile Badge or Login Button */}
