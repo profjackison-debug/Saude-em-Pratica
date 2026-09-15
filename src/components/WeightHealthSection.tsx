@@ -6,7 +6,7 @@ import {
   SpiralNotepadGraphic,
 } from './Illustrations';
 import physicalActivityPhoto from '../assets/atividade_fisica_jovens.jpg';
-import { playClickSound, playFanfare } from '../utils/audio';
+import { playClickSound } from '../utils/audio';
 
 interface WeightHealthSectionProps {
   onChallengeClick?: () => void;
@@ -512,22 +512,21 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
             </div>
             <p className="text-xs sm:text-sm text-sky-200 mt-0.5">
               {isQuizSolved
-                ? 'Avance para a Semana Ativa para planejar e calcular a média aritmética de movimento semanal.'
-                : 'Aperte em "Começar missão" no topo para responder o quiz e desbloquear "3. Semana Ativa"!'}
+                ? 'Avance para a Semana Ativa utilizando as abas no topo da tela.'
+                : 'Aperte no botão "Começar missão" no topo para responder o quiz e desbloquear "3. Semana Ativa"!'}
             </p>
           </div>
 
-          {isQuizSolved && (
-            <button
-              onClick={() => {
-                playFanfare();
-                onNavigateToNext?.();
-              }}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer shrink-0 transition"
-            >
-              <span>🎉 Avançar para "3. Semana Ativa"</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
+          {isQuizSolved ? (
+            <div className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs shrink-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+              <span>Etapa 2 Concluída</span>
+            </div>
+          ) : (
+            <div className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-sky-950/70 border border-sky-500/40 text-sky-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs shrink-0">
+              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
+              <span>Quiz Pendente</span>
+            </div>
           )}
         </div>
       </div>

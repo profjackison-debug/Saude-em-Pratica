@@ -1,8 +1,7 @@
 import React from 'react';
-import { Scale, Flame, Sparkles, Info, CheckCircle2, ArrowRight, Lock } from 'lucide-react';
+import { Scale, Flame, Sparkles, Info, CheckCircle2, Lock } from 'lucide-react';
 import { MealTimeId } from '../../types';
-import { playClickSound, playFanfare } from '../../utils/audio';
-import confetti from 'canvas-confetti';
+import { playClickSound } from '../../utils/audio';
 
 interface DailyBalanceBannerProps {
   mealSlots: Record<MealTimeId, { items: { food: { servingSizeGrams: number; per100g: { energyKcal: number } }; portions: number }[] }>;
@@ -217,40 +216,25 @@ export const DailyBalanceBanner: React.FC<DailyBalanceBannerProps> = ({
             ) : !isMissionSolved ? (
               <>Aperte no botão verde <strong>"Começar missão"</strong> abaixo para responder ao quiz e avançar para "2. Peso e Saúde"!</>
             ) : (
-              <>Clique no botão ao lado para avançar e investigar o impacto no peso corporal e IMC!</>
+              <>Utilize as abas no topo da tela para navegar para a etapa "2. Peso e Saúde"!</>
             )}
           </p>
         </div>
 
         {allFourMealsCompleted && isMissionSolved ? (
-          <button
-            onClick={() => {
-              playFanfare();
-              try {
-                confetti({
-                  particleCount: 65,
-                  spread: 70,
-                  origin: { y: 0.65 },
-                  colors: ['#0d9488', '#3b82f6', '#f59e0b', '#10b981'],
-                });
-              } catch { /* ignore */ }
-              onNavigateToWeight?.();
-            }}
-            title="Avançar para o passo 2. Peso e Saúde"
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl font-black text-xs sm:text-sm md:text-base flex items-center justify-center gap-2.5 transition-all shadow-lg shrink-0 bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 shadow-amber-950/20 scale-[1.02] hover:scale-105 border-2 border-white cursor-pointer"
-          >
-            <span>🎉 Avançar para "2. Peso e Saúde"</span>
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          <div className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs shrink-0">
+            <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+            <span>Etapa 1 Concluída</span>
+          </div>
         ) : allFourMealsCompleted && !isMissionSolved ? (
-          <div className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-teal-950/70 border-2 border-teal-500/50 text-teal-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-md shrink-0">
+          <div className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-teal-950/70 border-2 border-teal-500/50 text-teal-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shrink-0">
             <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
-            <span>Aperte em <strong>"Começar missão"</strong> abaixo 👇</span>
+            <span>Missão Pendente</span>
           </div>
         ) : (
           <div
             title={`Bloqueado: Monte as 4 refeições para liberar (${dailyStats.completedCount}/4 concluídas)`}
-            className="w-full sm:w-auto px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-xs shrink-0 bg-teal-950/50 border border-teal-600/40 text-teal-200/70"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs shrink-0 bg-teal-950/50 border border-teal-600/40 text-teal-200/70"
           >
             <Lock className="w-4 h-4 text-teal-300/80 shrink-0" />
             <span>Monte as 4 Refeições ({dailyStats.completedCount}/4)</span>

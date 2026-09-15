@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Activity, Clock, Dumbbell, Check, Plus, X, ArrowRight, Sparkles, CheckCircle2, Lock } from 'lucide-react';
+import { Activity, Clock, Dumbbell, Check, Plus, X, Sparkles, CheckCircle2 } from 'lucide-react';
 import inclusiveMovementPhoto from '../assets/movimento_inclusivo_jovens.jpg';
-import { playClickSound, playFanfare } from '../utils/audio';
+import { playClickSound } from '../utils/audio';
 
 interface ActiveWeekSectionProps {
-  onChallengeClick: () => void;
+  onChallengeClick?: () => void;
   isFocusedView?: boolean;
   onCloseFocus?: () => void;
   isQuizSolved?: boolean;
@@ -200,33 +200,21 @@ export const ActiveWeekSection: React.FC<ActiveWeekSectionProps> = ({
             </div>
             <p className="text-xs sm:text-sm text-teal-200 mt-0.5">
               {isQuizSolved
-                ? 'Você completou a jornada de desafios! Veja suas conquistas e estrelas no Ranking da Turma.'
-                : 'Aperte no botão ao lado ou em "Começar missão" para responder ao quiz da média ativa e liberar o Ranking!'}
+                ? 'Você completou a jornada de desafios! Veja suas conquistas e estrelas no Ranking da Turma pelas abas no topo.'
+                : 'Aperte no botão "Começar missão" para responder ao quiz da média ativa e liberar o Ranking!'}
             </p>
           </div>
 
           {isQuizSolved ? (
-            <button
-              onClick={() => {
-                playFanfare();
-                onNavigateToNext?.();
-              }}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer shrink-0 transition"
-            >
-              <span>🏆 Ver Minha Posição no Ranking</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
+            <div className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs shrink-0">
+              <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+              <span>Etapa 3 Concluída</span>
+            </div>
           ) : (
-            <button
-              onClick={() => {
-                playClickSound();
-                onChallengeClick();
-              }}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer shrink-0 transition animate-pulse"
-            >
-              <span>🎯 Jogar Quiz de Movimento para Liberar Ranking</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
+            <div className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-teal-950/70 border border-teal-500/40 text-teal-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs shrink-0">
+              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse shrink-0" />
+              <span>Quiz Pendente</span>
+            </div>
           )}
         </div>
       </div>
