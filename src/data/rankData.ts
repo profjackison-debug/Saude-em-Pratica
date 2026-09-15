@@ -30,8 +30,59 @@ export const GRADE_OPTIONS = [
 
 export const INITIAL_PEER_RANKINGS: RankEntry[] = [];
 
-const LOCAL_STORAGE_KEY_CURRENT_STUDENT = 'saude_pratica_active_student_v1';
-const LOCAL_STORAGE_KEY_ALL_STUDENTS = 'saude_pratica_saved_students_v1';
+const LOCAL_STORAGE_KEY_CURRENT_STUDENT = 'saude_pratica_active_student_v2';
+const LOCAL_STORAGE_KEY_ALL_STUDENTS = 'saude_pratica_saved_students_v2';
+const PURGE_FLAG_KEY = 'saude_pratica_clean_slate_users_v2';
+
+/**
+ * Remove todos os estudantes cadastrados e dados de progresso associados
+ * deixando o sistema 100% limpo, sem nenhum usuário logado ou salvo.
+ */
+export const purgeAllStudents = (): void => {
+  try {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT);
+      localStorage.removeItem(LOCAL_STORAGE_KEY_ALL_STUDENTS);
+      localStorage.removeItem('saude_pratica_active_student_v1');
+      localStorage.removeItem('saude_pratica_saved_students_v1');
+      localStorage.removeItem('saude_pratica_badges_guest_v2');
+      localStorage.removeItem('saude_pratica_solved_guest_v2');
+      localStorage.removeItem('saude_pratica_meals_v2');
+      localStorage.removeItem('saude_pratica_badges_v1');
+      localStorage.removeItem('saude_pratica_solved_v1');
+      localStorage.removeItem('saude_pratica_progress_v1');
+
+      // Limpar chaves antigas de estudantes específicos
+      const toRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (
+          k &&
+          (k.startsWith('saude_pratica_badges_student_') ||
+            k.startsWith('saude_pratica_solved_student_') ||
+            k.startsWith('saude_pratica_meals_student_'))
+        ) {
+          toRemove.push(k);
+        }
+      }
+      toRemove.forEach((k) => localStorage.removeItem(k));
+      localStorage.setItem(PURGE_FLAG_KEY, 'true');
+    }
+  } catch {
+    /* ignore */
+  }
+};
+
+// Executa a limpeza inicial se ainda não tiver sido efetuada
+if (typeof window !== 'undefined') {
+  try {
+    if (!localStorage.getItem(PURGE_FLAG_KEY)) {
+      purgeAllStudents();
+    }
+  } catch {
+    /* ignore */
+  }
+}
 
 export const loadStoredStudent = (): StudentProfile | null => {
   try {
@@ -44,14 +95,12 @@ export const loadStoredStudent = (): StudentProfile | null => {
         typeof parsed.name === 'string' &&
         parsed.name.trim().length > 0
       ) {
-        // Remover dados de usuário fictício de testes anteriores se existirem
         if (parsed.id === 'student_default_1' || parsed.name === 'Lucas Estudante') {
           localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT);
           return null;
         }
         const completedMissions = Number.isFinite(parsed.completedMissions) ? Math.max(0, parsed.completedMissions) : 0;
         const currentStars = Number.isFinite(parsed.starsCount) ? Math.max(0, parsed.starsCount) : 0;
-        // Cada missão concluída vale 4 perguntas/estrelas (totalizando 12 estrelas no jogo)
         const finalStars = Math.max(currentStars, completedMissions * 4);
         const currentScore = Number.isFinite(parsed.score) ? Math.max(0, parsed.score) : 0;
         const finalScore = Math.max(currentScore, finalStars * 100);
@@ -75,8 +124,22 @@ export const loadStoredStudent = (): StudentProfile | null => {
 export const clearStoredStudent = (): void => {
   try {
     localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT);
+    localStorage.removeItem('saude_pratica_active_student_v1');
   } catch (e) {
     console.warn('Erro ao limpar estudante do localStorage:', e);
+  }
+};
+
+export const removeSavedStudent = (studentId: string): void => {
+  try {
+    const saved = loadSavedStudentsList().filter((s) => s.id !== studentId);
+    localStorage.setItem(LOCAL_STORAGE_KEY_ALL_STUDENTS, JSON.stringify(saved));
+    const current = loadStoredStudent();
+    if (current && current.id === studentId) {
+      clearStoredStudent();
+    }
+  } catch (e) {
+    console.warn('Erro ao remover estudante:', e);
   }
 };
 
@@ -92,7 +155,7 @@ export const saveStoredStudent = (student: StudentProfile): void => {
     };
     localStorage.setItem(LOCAL_STORAGE_KEY_CURRENT_STUDENT, JSON.stringify(sanitizedStudent));
 
-    // Also add/update in saved students list
+    // Atualiza na lista de alunos salvos
     const saved = loadSavedStudentsList();
     const existingIndex = saved.findIndex((s) => s.id === sanitizedStudent.id);
     if (existingIndex >= 0) {
