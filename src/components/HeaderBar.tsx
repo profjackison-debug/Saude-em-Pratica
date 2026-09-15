@@ -165,7 +165,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           {/* Estrelas */}
           <div
             className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-300 dark:border-amber-500/50 text-amber-900 dark:text-amber-200 px-3 py-1.5 rounded-2xl shadow-xs"
-            title={`${starsCount ?? 0} estrelas`}
+            title={`${starsCount ?? 0} de 12 estrelas conquistadas`}
           >
             <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-white shadow-xs">
               <Star className="w-4 h-4 fill-white text-white" />
@@ -176,7 +176,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           {/* Medalhas */}
           <div
             className="flex items-center gap-1.5 bg-white/95 dark:bg-[#0f1b33] border border-amber-200 dark:border-blue-700/60 text-slate-800 dark:text-slate-200 px-3 py-1.5 rounded-2xl shadow-xs"
-            title={`${unlockedBadgesCount} medalhas`}
+            title={`${unlockedBadgesCount} de 12 medalhas conquistadas`}
           >
             <div className="w-6 h-6 rounded-full bg-gradient-to-b from-amber-400 to-amber-600 flex items-center justify-center text-white shadow-xs">
               <Award className="w-4 h-4 text-white" />
