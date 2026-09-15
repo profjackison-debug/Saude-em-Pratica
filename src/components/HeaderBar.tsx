@@ -251,20 +251,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 playClickSound();
                 onToggleTheme();
               }}
-              className="flex items-center gap-1.5 p-2 rounded-xl bg-white dark:bg-[#0f1b33] border border-teal-200 dark:border-blue-700 text-teal-800 dark:text-blue-200 hover:bg-teal-50 dark:hover:bg-blue-900/40 transition shadow-xs cursor-pointer"
+              className="p-2 rounded-xl bg-white dark:bg-[#0f1b33] border border-teal-200 dark:border-blue-700 text-teal-800 dark:text-blue-200 hover:bg-teal-50 dark:hover:bg-blue-900/40 transition shadow-xs cursor-pointer flex items-center justify-center"
               title={theme === 'dark' ? 'Mudar para Tema Claro' : 'Mudar para Tema Escuro (Modo Noturno Azul)'}
               aria-label="Alternar tema de cores"
             >
               {theme === 'dark' ? (
-                <>
-                  <Sun className="w-4 h-4 text-amber-400 animate-in spin-in-90 duration-300" />
-                  <span className="hidden xl:inline text-xs font-bold text-amber-300">Claro</span>
-                </>
+                <Sun className="w-4 h-4 text-amber-400 animate-in spin-in-90 duration-300" />
               ) : (
-                <>
-                  <Moon className="w-4 h-4 text-teal-700 animate-in spin-in-90 duration-300" />
-                  <span className="hidden xl:inline text-xs font-bold text-teal-900">Escuro</span>
-                </>
+                <Moon className="w-4 h-4 text-teal-700 animate-in spin-in-90 duration-300" />
               )}
             </button>
           )}
