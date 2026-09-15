@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { FoodItem, MealSlot, MealTimeId, LearningBadge, AppScreenId, StudentProfile } from '../types';
 import { BRAZILIAN_FOODS, INITIAL_BADGES } from '../data/tacoData';
-import { loadStoredStudent, saveStoredStudent, clearStoredStudent } from '../data/rankData';
+import { loadStoredStudent, saveStoredStudent, clearStoredStudent, loadSavedStudentsList } from '../data/rankData';
 import { applyTheme, getInitialTheme, ThemeMode } from '../utils/theme';
 import { setAudioMuted } from '../utils/audio';
 
@@ -155,21 +155,31 @@ export function loadBadgesFromStorage(studentId?: string | null): LearningBadge[
       }
     }
 
-    // Se o estudante tem missões concluídas no solvedStorage, garantir que as medalhas daquela missão estão desbloqueadas
+    // Se o estudante tem missões concluídas no perfil ou no solvedStorage, garantir que todas as 4 medalhas de cada missão estão desbloqueadas
     const solvedChallenges = loadSolvedFromStorage(studentId);
-    if (solvedChallenges.includes('chal-1')) {
+    const activeStudent = loadStoredStudent();
+    const targetStudent =
+      (activeStudent && (!studentId || activeStudent.id === studentId))
+        ? activeStudent
+        : loadSavedStudentsList().find((s) => s.id === studentId);
+    const completedCount = Math.max(
+      targetStudent?.completedMissions || 0,
+      solvedChallenges.length
+    );
+
+    if (completedCount >= 1 || solvedChallenges.includes('chal-1')) {
       storedMap['badge-investigacao'] = true;
       storedMap['badge-prato-verde'] = true;
       storedMap['badge-regra-tres'] = true;
       storedMap['badge-nutri-energia'] = true;
     }
-    if (solvedChallenges.includes('chal-2')) {
+    if (completedCount >= 2 || solvedChallenges.includes('chal-2')) {
       storedMap['badge-grandezas-imc'] = true;
       storedMap['badge-potenciacao'] = true;
       storedMap['badge-divisao-decimal'] = true;
       storedMap['badge-colaboracao'] = true;
     }
-    if (solvedChallenges.includes('chal-3')) {
+    if (completedCount >= 3 || solvedChallenges.includes('chal-3')) {
       storedMap['badge-participacao'] = true;
       storedMap['badge-estrategista-movimento'] = true;
       storedMap['badge-tempo-ativo'] = true;
@@ -190,10 +200,25 @@ export function loadSolvedFromStorage(studentId?: string | null): string[] {
   try {
     const key = getSolvedStorageKey(studentId);
     const raw = localStorage.getItem(key);
+    let list: string[] = [];
     if (raw) {
       const parsed: string[] = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) list = parsed;
     }
+
+    // Auto-sync com o perfil do estudante se houver missões concluídas
+    const activeStudent = loadStoredStudent();
+    const targetStudent =
+      (activeStudent && (!studentId || activeStudent.id === studentId))
+        ? activeStudent
+        : loadSavedStudentsList().find((s) => s.id === studentId);
+
+    if (targetStudent && targetStudent.completedMissions > 0) {
+      if (targetStudent.completedMissions >= 1 && !list.includes('chal-1')) list.push('chal-1');
+      if (targetStudent.completedMissions >= 2 && !list.includes('chal-2')) list.push('chal-2');
+      if (targetStudent.completedMissions >= 3 && !list.includes('chal-3')) list.push('chal-3');
+    }
+    return list;
   } catch {
     /* ignore */
   }
