@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Scale, Heart, Info, X, CheckCircle2, BookOpen, ArrowRight } from 'lucide-react';
+import { Scale, Heart, Info, X, CheckCircle2, BookOpen, ArrowRight, Sparkles, Lock } from 'lucide-react';
 import {
   Calculator3D,
   MeasuringTapeGraphic,
   SpiralNotepadGraphic,
 } from './Illustrations';
 import physicalActivityPhoto from '../assets/atividade_fisica_jovens.jpg';
-import { playClickSound } from '../utils/audio';
+import { playClickSound, playFanfare } from '../utils/audio';
 
 interface WeightHealthSectionProps {
   onChallengeClick: () => void;
@@ -14,6 +14,8 @@ interface WeightHealthSectionProps {
   onCloseFocus?: () => void;
   consumedKcal?: number;
   consumedGrams?: number;
+  isQuizSolved?: boolean;
+  onNavigateToNext?: () => void;
 }
 
 export interface BmiCategory {
@@ -198,6 +200,8 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
   onCloseFocus,
   consumedKcal,
   consumedGrams,
+  isQuizSolved = false,
+  onNavigateToNext,
 }) => {
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const [massKg, setMassKg] = useState<number>(65);
