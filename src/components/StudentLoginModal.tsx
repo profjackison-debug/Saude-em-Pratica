@@ -178,51 +178,70 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
               </div>
 
               <div className="grid grid-cols-1 gap-2">
-                {savedStudents.map((student) => {
-                  const isCurrent = currentStudent ? student.id === currentStudent.id : false;
-                  return (
-                    <div
-                      key={student.id}
-                      onClick={() => handleSelectSaved(student)}
-                      className={`p-3.5 rounded-2xl border-2 transition cursor-pointer flex items-center justify-between gap-3 ${
-                        isCurrent
-                          ? 'border-blue-500 bg-blue-50/70 dark:bg-blue-950/70 shadow-xs'
-                          : 'border-slate-200 dark:border-blue-900 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-slate-50 dark:hover:bg-[#132240]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${student.avatarBg} p-0.5 shadow-sm flex items-center justify-center text-xl`}
-                        >
-                          {student.avatarEmoji}
-                        </div>
-                        <div className="text-left">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-black text-slate-900 dark:text-slate-100">
-                              {student.name}
-                            </span>
-                            {isCurrent && (
-                              <span className="text-[10px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                                Ativo agora
-                              </span>
-                            )}
+                {savedStudents.length === 0 ? (
+                  <div className="py-8 text-center bg-slate-50 dark:bg-[#132240] rounded-2xl border border-dashed border-slate-200 dark:border-blue-800 p-4">
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                      Nenhum estudante cadastrado no momento.
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Crie o primeiro perfil de aluno para iniciar o jogo!
+                    </p>
+                  </div>
+                ) : (
+                  savedStudents.map((student) => {
+                    const isCurrent = currentStudent ? student.id === currentStudent.id : false;
+                    return (
+                      <div
+                        key={student.id}
+                        onClick={() => handleSelectSaved(student)}
+                        className={`p-3 rounded-2xl border-2 transition cursor-pointer flex items-center justify-between gap-3 ${
+                          isCurrent
+                            ? 'border-blue-500 bg-blue-50/70 dark:bg-blue-950/70 shadow-xs'
+                            : 'border-slate-200 dark:border-blue-900 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-slate-50 dark:hover:bg-[#132240]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div
+                            className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${student.avatarBg} p-0.5 shadow-sm flex items-center justify-center text-xl shrink-0`}
+                          >
+                            {student.avatarEmoji}
                           </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                            {student.grade} • {student.school || 'CETi Agostinho Ernesto de Almeida'}
-                          </p>
+                          <div className="text-left min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-black text-slate-900 dark:text-slate-100 truncate">
+                                {student.name}
+                              </span>
+                              {isCurrent && (
+                                <span className="text-[10px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-full shrink-0">
+                                  Ativo agora
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
+                              {student.grade} • {student.school || 'CETi Agostinho Ernesto de Almeida'}
+                            </p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 text-xs font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 px-2 py-1 rounded-xl">
-                          <span>⭐</span>
-                          <span>{student.starsCount || 0}</span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <div className="flex items-center gap-1 text-xs font-black text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 px-2 py-1 rounded-xl">
+                            <span>⭐</span>
+                            <span>{student.starsCount || 0}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => handleDeleteStudent(student.id, e)}
+                            className="p-1.5 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-950/60 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
+                            title={`Excluir cadastro de ${student.name}`}
+                            aria-label={`Excluir ${student.name}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-slate-400" />
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
 
               <button
