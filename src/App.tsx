@@ -165,7 +165,7 @@ export default function App() {
       {/* Top Header Bar */}
       <HeaderBar
         progressPercentage={progressPercentage}
-        starsCount={currentStudent?.starsCount ?? 0}
+        starsCount={currentStudent ? currentStudent.starsCount : (guestStarsCount || 0)}
         badges={badges}
         currentStudent={currentStudent}
         solvedMissionsCount={solvedChallengeIds.length}
@@ -401,6 +401,7 @@ export default function App() {
           onClose={() => setIsMissionModalOpen(false)}
           onSolveChallenge={handleSolveChallenge}
           onUnlockBadge={handleUnlockBadge}
+          onAwardQuestionStar={handleAwardQuestionStar}
           onNavigateToScreen={(screen) => {
             if (screen === 'weight' && !areAllFourMealsCompleted) {
               setActiveScreen('meals');
@@ -417,7 +418,7 @@ export default function App() {
         <CategoryInfoModal
           category={activeCategoryModal}
           onClose={() => setActiveCategoryModal(null)}
-          starsCount={currentStudent?.starsCount ?? 0}
+          starsCount={currentStudent ? currentStudent.starsCount : (guestStarsCount || 0)}
         />
       )}
 
@@ -428,7 +429,7 @@ export default function App() {
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
           onOpenExportModal={() => setIsExportModalOpen(true)}
-          starsCount={currentStudent?.starsCount ?? 0}
+          starsCount={currentStudent ? currentStudent.starsCount : (guestStarsCount || 0)}
           currentStudent={currentStudent}
           onOpenLoginModal={() => setIsLoginModalOpen(true)}
           onOpenRank={() => {
