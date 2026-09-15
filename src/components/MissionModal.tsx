@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Star, Award, CheckCircle2, AlertCircle, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
+import { X, Star, CheckCircle2, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { MathChallenge, LearningBadge, AppScreenId } from '../types';
+import { MathChallenge, LearningBadge, AppScreenId, QuizQuestion } from '../types';
 import { playClickSound, playStarSound, playFanfare } from '../utils/audio';
 
 interface MissionModalProps {
@@ -28,9 +28,18 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   onNavigateToScreen,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialChallengeIndex);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [answeredQuestionIds, setAnsweredQuestionIds] = useState<Record<string, boolean>>({});
   const advanceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setCurrentIndex(initialChallengeIndex);
+    setCurrentQuestionIndex(0);
+    setSelectedOptionId(null);
+    setHasSubmitted(false);
+  }, [initialChallengeIndex]);
 
   useEffect(() => {
     return () => {
@@ -40,7 +49,22 @@ export const MissionModal: React.FC<MissionModalProps> = ({
 
   const currentChallenge = challenges[currentIndex];
   if (!currentChallenge) return null;
-  const selectedOption = currentChallenge.options.find((o) => o.id === selectedOptionId);
+
+  const questions: QuizQuestion[] =
+    currentChallenge.questions && currentChallenge.questions.length > 0
+      ? currentChallenge.questions
+      : [
+          {
+            id: currentChallenge.id,
+            title: currentChallenge.title,
+            question: currentChallenge.question || '',
+            context: currentChallenge.context || '',
+            options: currentChallenge.options || [],
+          },
+        ];
+
+  const currentQuestion = questions[currentQuestionIndex] || questions[0]!;
+  const selectedOption = currentQuestion.options.find((o) => o.id === selectedOptionId);
 
   const getNextScreen = (index: number): { id: AppScreenId; name: string; icon: string } => {
     if (index === 0) {
@@ -53,14 +77,13 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   };
 
   const nextScreen = getNextScreen(currentIndex);
+  const isAlreadySolved = solvedChallengeIds.includes(currentChallenge.id);
 
   const handleSelectOption = (id: string) => {
     if (hasSubmitted) return;
     playClickSound();
     setSelectedOptionId(id);
   };
-
-  const isAlreadySolved = solvedChallengeIds.includes(currentChallenge.id);
 
   const handleAdvanceToNextScreen = () => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
@@ -71,52 +94,69 @@ export const MissionModal: React.FC<MissionModalProps> = ({
     onClose();
   };
 
+  const isLastQuestion = currentQuestionIndex === questions.length - 1;
+  const allCompleted = questions.every((q) => answeredQuestionIds[q.id]);
+
   const handleSubmitAnswer = () => {
     if (!selectedOption) return;
     setHasSubmitted(true);
 
     if (selectedOption.isCorrect) {
-      if (!isAlreadySolved) {
-        playStarSound();
-        onSolveChallenge(currentChallenge.id);
+      playStarSound();
+      const updatedAnswered = { ...answeredQuestionIds, [currentQuestion.id]: true };
+      setAnsweredQuestionIds(updatedAnswered);
 
-        // Trigger celebration confetti
-        try {
-          confetti({
-            particleCount: 50,
-            spread: 60,
-            origin: { y: 0.6 },
-          });
-        } catch {
-          // ignore
+      const allNowCompleted = questions.every((q) => updatedAnswered[q.id]);
+
+      if (allNowCompleted) {
+        if (!isAlreadySolved) {
+          onSolveChallenge(currentChallenge.id);
+
+          try {
+            confetti({
+              particleCount: 60,
+              spread: 70,
+              origin: { y: 0.6 },
+            });
+          } catch {
+            // ignore
+          }
+
+          if (currentChallenge.area === 'refeicoes') {
+            onUnlockBadge('badge-investigacao');
+          } else if (currentChallenge.area === 'movimento') {
+            onUnlockBadge('badge-participacao');
+          } else if (currentChallenge.area === 'imc') {
+            onUnlockBadge('badge-colaboracao');
+          }
         }
 
-        // Check badge unlock
-        if (currentChallenge.area === 'refeicoes') {
-          onUnlockBadge('badge-investigacao');
-        } else if (currentChallenge.area === 'movimento') {
-          onUnlockBadge('badge-participacao');
-        } else if (currentChallenge.area === 'imc') {
-          onUnlockBadge('badge-colaboracao');
+        const canAdvanceDirectly = currentIndex === 0 ? areAllFourMealsCompleted : true;
+        if (canAdvanceDirectly) {
+          if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+          advanceTimerRef.current = setTimeout(() => {
+            handleAdvanceToNextScreen();
+          }, 2200);
         }
-      }
-
-      // Ao acertar, vai direto para a próxima etapa sem precisar clicar na barra superior!
-      const canAdvanceDirectly = currentIndex === 0 ? areAllFourMealsCompleted : true;
-      if (canAdvanceDirectly) {
-        if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-        advanceTimerRef.current = setTimeout(() => {
-          handleAdvanceToNextScreen();
-        }, 1300);
       }
     }
+  };
+
+  const handleNextQuestion = () => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    playClickSound();
+    const nextIdx = Math.min(questions.length - 1, currentQuestionIndex + 1);
+    setCurrentQuestionIndex(nextIdx);
+    const isNextDone = Boolean(answeredQuestionIds[questions[nextIdx]?.id ?? '']);
+    setSelectedOptionId(null);
+    setHasSubmitted(isNextDone);
   };
 
   const handleCloseModal = () => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     playClickSound();
     const canAdvanceDirectly = currentIndex === 0 ? areAllFourMealsCompleted : true;
-    if (hasSubmitted && selectedOption?.isCorrect && canAdvanceDirectly) {
+    if (hasSubmitted && selectedOption?.isCorrect && allCompleted && canAdvanceDirectly) {
       handleAdvanceToNextScreen();
     } else {
       onClose();
@@ -124,56 +164,93 @@ export const MissionModal: React.FC<MissionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs">
-      <div className="bg-white dark:bg-[#0f1b33] rounded-3xl max-w-xl w-full border-4 border-teal-500 dark:border-blue-600 shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/70 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white dark:bg-[#0f1b33] rounded-3xl max-w-xl w-full border-4 border-teal-500 dark:border-blue-600 shadow-2xl overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in-95 duration-200 transition-colors">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-teal-700 via-teal-800 to-teal-900 dark:from-blue-700 dark:via-blue-800 dark:to-blue-900 text-white p-4 sm:p-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-teal-500/30 dark:bg-blue-500/30 border border-teal-300/40 dark:border-blue-300/40 flex items-center justify-center text-xl">
-              🎯
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black font-display tracking-wide">
-                  Missão Matemática
-                </h3>
-                <span className="text-[10px] font-bold bg-teal-400 dark:bg-blue-400 text-teal-950 dark:text-blue-950 px-2 py-0.5 rounded-full uppercase">
-                  Desafio {currentIndex + 1} de {challenges.length}
-                </span>
+        <div className="bg-gradient-to-r from-teal-700 via-teal-800 to-teal-900 dark:from-blue-700 dark:via-blue-800 dark:to-blue-900 text-white p-4 sm:p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-teal-500/30 dark:bg-blue-500/30 border border-teal-300/40 dark:border-blue-300/40 flex items-center justify-center text-xl">
+                🎯
               </div>
-              <p className="text-xs text-teal-200 dark:text-blue-200 font-medium">
-                {currentChallenge.title}
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-black font-display tracking-wide">
+                    {currentChallenge.title}
+                  </h3>
+                  <span className="text-[10px] font-bold bg-teal-400 dark:bg-blue-400 text-teal-950 dark:text-blue-950 px-2 py-0.5 rounded-full uppercase">
+                    Etapa {currentIndex + 1} de {challenges.length}
+                  </span>
+                </div>
+                <p className="text-xs text-teal-200 dark:text-blue-200 font-medium">
+                  {currentQuestion.title || `Pergunta ${currentQuestionIndex + 1}`}
+                </p>
+              </div>
             </div>
+            <button
+              onClick={handleCloseModal}
+              className="p-1.5 rounded-xl hover:bg-white/20 text-teal-100 dark:text-blue-100 hover:text-white transition cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={handleCloseModal}
-            className="p-1.5 rounded-xl hover:bg-white/20 text-teal-100 dark:text-blue-100 hover:text-white transition cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+
+          {/* Stepper for questions (1, 2, 3, 4) */}
+          <div className="flex items-center gap-2 pt-2 border-t border-white/15 flex-wrap">
+            <span className="text-[11px] text-teal-200 dark:text-blue-200 font-bold mr-0.5">
+              Questões:
+            </span>
+            {questions.map((q, idx) => {
+              const isDone = Boolean(answeredQuestionIds[q.id]);
+              const isCurrent = idx === currentQuestionIndex;
+              return (
+                <button
+                  key={q.id}
+                  type="button"
+                  onClick={() => {
+                    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+                    playClickSound();
+                    setCurrentQuestionIndex(idx);
+                    setSelectedOptionId(null);
+                    setHasSubmitted(isDone);
+                  }}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 border ${
+                    isCurrent
+                      ? 'bg-white dark:bg-[#0f1b33] text-teal-950 dark:text-blue-100 border-white shadow-sm ring-2 ring-teal-300/60'
+                      : isDone
+                      ? 'bg-emerald-500 text-white border-emerald-400'
+                      : 'bg-white/15 text-white/80 hover:bg-white/25 border-white/20'
+                  }`}
+                  title={`Ir para a Pergunta ${idx + 1}`}
+                >
+                  {isDone ? <span className="font-bold">✓</span> : <span>{idx + 1}</span>}
+                  <span>P{idx + 1}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-3.5 max-h-[72vh] overflow-y-auto">
           {/* Context box */}
-          <div className="bg-teal-50/60 dark:bg-[#0b162b] border border-teal-200/80 dark:border-blue-800 rounded-2xl p-3.5">
+          <div className="bg-teal-50/60 dark:bg-[#0b162b] border border-teal-200/80 dark:border-blue-800 rounded-2xl p-3 sm:p-3.5">
             <div className="text-[11px] font-bold uppercase tracking-wider text-teal-800 dark:text-blue-300 mb-1">
-              Contexto Pedagógico
+              Contexto Pedagógico • {currentQuestion.title || `Pergunta ${currentQuestionIndex + 1}`}
             </div>
             <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-              {currentChallenge.context}
+              {currentQuestion.context}
             </p>
           </div>
 
           {/* Question Text */}
           <div className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-white leading-snug">
-            {currentChallenge.question}
+            {currentQuestion.question}
           </div>
 
           {/* Multiple Choice Options */}
           <div className="space-y-2 pt-1">
-            {currentChallenge.options.map((option) => {
+            {currentQuestion.options.map((option) => {
               const isSelected = selectedOptionId === option.id;
               let optionClass =
                 'border-slate-200 dark:border-blue-900/80 bg-white dark:bg-[#132240] hover:border-teal-300 dark:hover:border-blue-500 text-slate-800 dark:text-slate-200';
@@ -226,14 +303,21 @@ export const MissionModal: React.FC<MissionModalProps> = ({
             >
               <div className="flex items-center gap-2 font-black text-xs sm:text-sm mb-1">
                 {selectedOption.isCorrect ? (
-                  <>
-                    <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span>Excelente raciocínio matemático! (+1 Estrela ⭐️)</span>
-                  </>
+                  allCompleted ? (
+                    <>
+                      <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>Sensacional! Você concluiu as {questions.length} perguntas da missão! (+1 Estrela ⭐️)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>Resposta Correta! ({currentQuestionIndex + 1} de {questions.length})</span>
+                    </>
+                  )
                 ) : (
                   <>
                     <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                    <span>Quase lá! Veja a explicação:</span>
+                    <span>Quase lá! Veja a explicação pedagógica:</span>
                   </>
                 )}
               </div>
@@ -241,36 +325,53 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                 {selectedOption.explanation}
               </p>
 
-              {/* Direct Navigation Button to Next Stage */}
+              {/* Action Inside Feedback */}
               {selectedOption.isCorrect && (
                 <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-blue-900/60 flex items-center justify-between gap-2 flex-wrap">
-                  <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                    <span>{nextScreen.icon}</span>
-                    {currentIndex === 0 && !areAllFourMealsCompleted ? (
-                      <span>Quiz concluído! Monte as 4 refeições no Diário para liberar <strong>{nextScreen.name}</strong></span>
-                    ) : (
-                      <span>Próxima etapa desbloqueada: <strong>{nextScreen.name}</strong></span>
-                    )}
-                  </span>
-                  {currentIndex === 0 && !areAllFourMealsCompleted ? (
-                    <button
-                      onClick={() => {
-                        playClickSound();
-                        onClose();
-                      }}
-                      className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
-                    >
-                      <span>🍽️ Ir para o Diário</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                  {allCompleted ? (
+                    <>
+                      <span className="text-xs font-black text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                        <span>{nextScreen.icon}</span>
+                        {currentIndex === 0 && !areAllFourMealsCompleted ? (
+                          <span>Missão concluída! Monte as 4 refeições no Diário para liberar <strong>{nextScreen.name}</strong></span>
+                        ) : (
+                          <span>Próxima etapa desbloqueada: <strong>{nextScreen.name}</strong></span>
+                        )}
+                      </span>
+                      {currentIndex === 0 && !areAllFourMealsCompleted ? (
+                        <button
+                          onClick={() => {
+                            playClickSound();
+                            onClose();
+                          }}
+                          className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                        >
+                          <span>🍽️ Ir para o Diário</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleAdvanceToNextScreen}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer animate-pulse"
+                        >
+                          <span>Avançar para {nextScreen.name}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </>
                   ) : (
-                    <button
-                      onClick={handleAdvanceToNextScreen}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer animate-pulse"
-                    >
-                      <span>Indo para {nextScreen.name}... (Avançar Agora)</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                    <>
+                      <span className="text-xs font-black text-emerald-800 dark:text-emerald-300">
+                        Pergunta {currentQuestionIndex + 1} concluída! Continue para finalizar a missão.
+                      </span>
+                      <button
+                        onClick={handleNextQuestion}
+                        className="bg-teal-700 hover:bg-teal-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </>
                   )}
                 </div>
               )}
@@ -282,7 +383,11 @@ export const MissionModal: React.FC<MissionModalProps> = ({
         <div className="p-4 bg-slate-50 dark:bg-[#0b162b] border-t border-slate-200 dark:border-blue-900/80 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
             <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
-            <span>Recompensa: 1 Estrela e Desbloqueio de Etapa</span>
+            <span>
+              {allCompleted
+                ? 'Missão 100% concluída! Recompensa liberada.'
+                : `Progresso da Missão: ${Object.keys(answeredQuestionIds).length} de ${questions.length} respondidas`}
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -295,23 +400,33 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                 Confirmar Resposta
               </button>
             ) : selectedOption?.isCorrect ? (
-              currentIndex === 0 && !areAllFourMealsCompleted ? (
-                <button
-                  onClick={() => {
-                    playClickSound();
-                    onClose();
-                  }}
-                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
-                >
-                  <span>🍽️ Quiz Concluído! Montar as 4 Refeições</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+              allCompleted ? (
+                currentIndex === 0 && !areAllFourMealsCompleted ? (
+                  <button
+                    onClick={() => {
+                      playClickSound();
+                      onClose();
+                    }}
+                    className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
+                  >
+                    <span>🍽️ Missão Concluída! Montar as 4 Refeições</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleAdvanceToNextScreen}
+                    className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md animate-pulse"
+                  >
+                    <span>🎉 Avançar para {nextScreen.name}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )
               ) : (
                 <button
-                  onClick={handleAdvanceToNextScreen}
-                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md animate-pulse"
+                  onClick={handleNextQuestion}
+                  className="game-button-teal text-white font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl flex items-center gap-2 cursor-pointer shadow-md"
                 >
-                  <span>🎉 Indo para {nextScreen.name}... (Avançar Agora)</span>
+                  <span>Próxima Pergunta ({currentQuestionIndex + 2}/{questions.length})</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               )
