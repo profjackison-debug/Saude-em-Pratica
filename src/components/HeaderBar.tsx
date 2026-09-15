@@ -47,8 +47,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   return (
     <header className="w-full bg-transparent px-3 sm:px-6 py-2.5 z-30">
       <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-3">
-        {/* Left: Logo with Leaves & Speech Bubble */}
-        <div className="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+        {/* Left: Logo with Leaves */}
+        <div className="flex items-center gap-3 w-full lg:w-auto lg:flex-1 justify-between lg:justify-start">
           <div className="flex items-center gap-2">
             {/* Logo Graphic with 2 Sprouting Green Leaves */}
             <div className="relative flex items-center">
@@ -94,24 +94,6 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             </div>
           </div>
 
-          {/* Progress Bar Pill: "Seu progresso" (in place of speech bubble) */}
-          <div className="flex items-center gap-3 bg-white/90 dark:bg-[#0f1b33]/90 border border-teal-200/80 dark:border-blue-700/80 px-4 py-2 rounded-2xl shadow-xs w-full sm:w-auto min-w-[220px] sm:min-w-[260px]">
-            <div className="flex-1">
-              <div className="flex justify-between items-center mb-1.5">
-                <span className="font-black text-teal-950 dark:text-blue-100 text-xs sm:text-sm">Seu progresso</span>
-                <span className="font-bold text-teal-800 dark:text-blue-300 text-xs sm:text-sm">
-                  {solvedCount} de {totalMissionsCount} missões
-                </span>
-              </div>
-              <div className="w-full h-3 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 shadow-inner">
-                <div
-                  className="h-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 dark:from-blue-500 dark:via-sky-400 dark:to-blue-600 rounded-full transition-all duration-500 shadow-xs"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
           {/* Mobile settings button */}
           <div className="flex items-center gap-1.5 lg:hidden">
             {onToggleTheme && (
@@ -143,8 +125,28 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </div>
         </div>
 
+        {/* Center: "Seu progresso" (Green Progress Bar Pill) */}
+        <div className="flex items-center justify-center w-full lg:w-auto">
+          <div className="flex items-center gap-3 bg-white/90 dark:bg-[#0f1b33]/90 border border-teal-200/80 dark:border-blue-700/80 px-4 py-2 rounded-2xl shadow-xs w-full sm:w-auto min-w-[260px] sm:min-w-[280px]">
+            <div className="flex-1">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="font-black text-teal-950 dark:text-blue-100 text-xs sm:text-sm">Seu progresso</span>
+                <span className="font-bold text-teal-800 dark:text-blue-300 text-xs sm:text-sm">
+                  {solvedCount} de {totalMissionsCount} missões
+                </span>
+              </div>
+              <div className="w-full h-3 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+                <div
+                  className="h-full bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 dark:from-blue-500 dark:via-sky-400 dark:to-blue-600 rounded-full transition-all duration-500 shadow-xs"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Right: Gamification Badges, Ranking Button & Student Profile Pill */}
-        <div className="flex items-center gap-2.5 w-full lg:w-auto justify-end flex-wrap">
+        <div className="flex items-center gap-2.5 w-full lg:w-auto lg:flex-1 justify-center lg:justify-end flex-wrap">
           {/* Ranking Button with Golden Trophy */}
           {onOpenRank && (
             <button
