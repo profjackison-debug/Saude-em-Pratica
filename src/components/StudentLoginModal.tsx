@@ -50,6 +50,20 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
     onClose();
   };
 
+  const handleDeleteStudent = (studentId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    playClickSound();
+    removeSavedStudent(studentId);
+    const updated = loadSavedStudentsList();
+    setSavedStudents(updated);
+    if (currentStudent && currentStudent.id === studentId && onLogout) {
+      onLogout();
+    }
+    if (updated.length === 0) {
+      setActiveTab('create');
+    }
+  };
+
   const handleCreateOrUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanName = name.trim().slice(0, 40);
@@ -82,6 +96,7 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
 
     playFanfare();
     saveStoredStudent(newProfile);
+    setSavedStudents(loadSavedStudentsList());
     onLoginStudent(newProfile);
     onClose();
   };
