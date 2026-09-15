@@ -197,21 +197,6 @@ export const MealDiarySection: React.FC<MealDiarySectionProps> = ({
             </p>
           </div>
         </div>
-
-        <button
-          onClick={() => { playClickSound(); onOpenProportionChallenge(); }}
-          className="group relative bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 active:scale-95 text-amber-950 font-black text-xs sm:text-sm md:text-base px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl shadow-md shadow-amber-500/25 border-2 border-amber-300/80 flex items-center gap-2.5 transition-all cursor-pointer self-end sm:self-auto shrink-0"
-          title="Resolver uma Missão Matemática sobre nutrição"
-        >
-          <span className="w-7 h-7 rounded-xl bg-amber-600/20 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-amber-950 fill-amber-300 group-hover:rotate-12 transition-transform" />
-          </span>
-          <span className="hidden sm:inline font-black">Missão Matemática</span>
-          <span className="sm:hidden font-black">Missão</span>
-          <span className="text-xs font-black bg-amber-900/15 px-2 py-0.5 rounded-md text-amber-950">
-            +XP
-          </span>
-        </button>
       </div>
 
       {/* Meal Time Tabs */}
