@@ -9,7 +9,7 @@ import physicalActivityPhoto from '../assets/atividade_fisica_jovens.jpg';
 import { playClickSound, playFanfare } from '../utils/audio';
 
 interface WeightHealthSectionProps {
-  onChallengeClick: () => void;
+  onChallengeClick?: () => void;
   isFocusedView?: boolean;
   onCloseFocus?: () => void;
   consumedKcal?: number;
@@ -445,7 +445,7 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
               <button
                 onClick={() => {
                   playClickSound();
-                  onChallengeClick();
+                  onChallengeClick?.();
                 }}
                 className="flex flex-col items-center group cursor-pointer hover:scale-105 transition"
                 title="Ver checklist e desafios matemáticos"
@@ -513,11 +513,11 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
             <p className="text-xs sm:text-sm text-sky-200 mt-0.5">
               {isQuizSolved
                 ? 'Avance para a Semana Ativa para planejar e calcular a média aritmética de movimento semanal.'
-                : 'Aperte no botão ao lado ou em "Começar missão" para responder o quiz e desbloquear "3. Semana Ativa"!'}
+                : 'Aperte em "Começar missão" no topo para responder o quiz e desbloquear "3. Semana Ativa"!'}
             </p>
           </div>
 
-          {isQuizSolved ? (
+          {isQuizSolved && (
             <button
               onClick={() => {
                 playFanfare();
@@ -526,17 +526,6 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
               className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-amber-950 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer shrink-0 transition"
             >
               <span>🎉 Avançar para "3. Semana Ativa"</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                playClickSound();
-                onChallengeClick();
-              }}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg cursor-pointer shrink-0 transition animate-pulse"
-            >
-              <span>🎯 Jogar Quiz do IMC para Liberar Etapa 3</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           )}
