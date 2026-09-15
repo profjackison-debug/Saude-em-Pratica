@@ -196,14 +196,49 @@ export const MissionModal: React.FC<MissionModalProps> = ({
     }
   };
 
+  const handleSelectQuestion = (idx: number) => {
+    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
+    playClickSound();
+    setCurrentQuestionIndex(idx);
+    const targetQ = questions[idx];
+    const isDone = Boolean(targetQ && answeredQuestionIds[targetQ.id]);
+    setSelectedOptionId(null);
+    setHasSubmitted(isDone);
+    if (targetQ && !isDone && targetQ.options?.length) {
+      setShuffledOptionsMap((prev) => ({
+        ...prev,
+        [targetQ.id]: shuffleArray(targetQ.options),
+      }));
+    }
+  };
+
   const handleNextQuestion = () => {
     if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
     playClickSound();
     const nextIdx = Math.min(questions.length - 1, currentQuestionIndex + 1);
     setCurrentQuestionIndex(nextIdx);
-    const isNextDone = Boolean(answeredQuestionIds[questions[nextIdx]?.id ?? '']);
+    const nextQ = questions[nextIdx];
+    const isNextDone = Boolean(nextQ && answeredQuestionIds[nextQ.id]);
     setSelectedOptionId(null);
     setHasSubmitted(isNextDone);
+    if (nextQ && !isNextDone && nextQ.options?.length) {
+      setShuffledOptionsMap((prev) => ({
+        ...prev,
+        [nextQ.id]: shuffleArray(nextQ.options),
+      }));
+    }
+  };
+
+  const handleRetry = () => {
+    playClickSound();
+    setHasSubmitted(false);
+    setSelectedOptionId(null);
+    if (currentQuestion && currentQuestion.options?.length) {
+      setShuffledOptionsMap((prev) => ({
+        ...prev,
+        [currentQuestion.id]: shuffleArray(currentQuestion.options),
+      }));
+    }
   };
 
   const handleCloseModal = () => {
@@ -261,13 +296,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                 <button
                   key={q.id}
                   type="button"
-                  onClick={() => {
-                    if (advanceTimerRef.current) clearTimeout(advanceTimerRef.current);
-                    playClickSound();
-                    setCurrentQuestionIndex(idx);
-                    setSelectedOptionId(null);
-                    setHasSubmitted(isDone);
-                  }}
+                  onClick={() => handleSelectQuestion(idx)}
                   className={`px-2.5 py-1 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 border ${
                     isCurrent
                       ? 'bg-white dark:bg-[#0f1b33] text-teal-950 dark:text-blue-100 border-white shadow-sm ring-2 ring-teal-300/60'
@@ -302,9 +331,10 @@ export const MissionModal: React.FC<MissionModalProps> = ({
             {currentQuestion.question}
           </div>
 
-          {/* Multiple Choice Options */}
+          {/* Multiple Choice Options (Embaralhadas dinamicamente com letras A, B, C, D sequenciais) */}
           <div className="space-y-2 pt-1">
-            {currentQuestion.options.map((option) => {
+            {displayOptions.map((option, optIdx) => {
+              const letter = OPTION_LETTERS[optIdx] ?? String.fromCharCode(65 + optIdx);
               const isSelected = selectedOptionId === option.id;
               let optionClass =
                 'border-slate-200 dark:border-blue-900/80 bg-white dark:bg-[#132240] hover:border-teal-300 dark:hover:border-blue-500 text-slate-800 dark:text-slate-200';
@@ -331,7 +361,7 @@ export const MissionModal: React.FC<MissionModalProps> = ({
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-[#0b162b] flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 text-xs uppercase shrink-0">
-                      {option.id}
+                      {letter}
                     </span>
                     <span>{option.text}</span>
                   </div>
