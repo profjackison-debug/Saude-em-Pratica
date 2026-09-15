@@ -205,10 +205,21 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
   consumedGrams,
   isQuizSolved = false,
   onNavigateToNext,
+  studentMassKg = 65,
+  studentHeightM = 1.65,
+  onMetricsChange,
 }) => {
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
-  const [massKg, setMassKg] = useState<number>(65);
-  const [heightM, setHeightM] = useState<number>(1.65);
+  const [massKg, setMassKg] = useState<number>(studentMassKg);
+  const [heightM, setHeightM] = useState<number>(studentHeightM);
+
+  React.useEffect(() => {
+    setMassKg(studentMassKg);
+  }, [studentMassKg]);
+
+  React.useEffect(() => {
+    setHeightM(studentHeightM);
+  }, [studentHeightM]);
 
   const exactBmi = heightM > 0 ? massKg / (heightM * heightM) : 0;
   const heightSquared = Number((heightM * heightM).toFixed(4));
@@ -217,12 +228,16 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
 
   const handleMassInput = (val: number) => {
     if (isNaN(val)) return;
-    setMassKg(Math.max(20, Math.min(200, val)));
+    const clamped = Math.max(20, Math.min(200, val));
+    setMassKg(clamped);
+    if (onMetricsChange) onMetricsChange(clamped, heightM);
   };
 
   const handleHeightInput = (val: number) => {
     if (isNaN(val)) return;
-    setHeightM(Math.max(1.0, Math.min(2.3, val)));
+    const clamped = Math.max(1.0, Math.min(2.3, val));
+    setHeightM(clamped);
+    if (onMetricsChange) onMetricsChange(massKg, clamped);
   };
 
   return (
@@ -345,7 +360,7 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
                   max="140"
                   step="0.5"
                   value={massKg}
-                  onChange={(e) => setMassKg(Number(e.target.value))}
+                  onChange={(e) => handleMassInput(Number(e.target.value))}
                   className="w-full accent-sky-600 cursor-pointer"
                 />
               </div>
@@ -375,7 +390,7 @@ export const WeightHealthSection: React.FC<WeightHealthSectionProps> = ({
                   max="2.05"
                   step="0.01"
                   value={heightM}
-                  onChange={(e) => setHeightM(Number(e.target.value))}
+                  onChange={(e) => handleHeightInput(Number(e.target.value))}
                   className="w-full accent-sky-600 cursor-pointer"
                 />
               </div>
