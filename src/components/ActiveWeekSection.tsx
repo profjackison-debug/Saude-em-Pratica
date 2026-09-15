@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Activity, Clock, Dumbbell, Check, Plus, X, Sparkles, CheckCircle2 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Activity, Clock, Dumbbell, Check, Plus, X, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
 import inclusiveMovementPhoto from '../assets/movimento_inclusivo_jovens.jpg';
-import { playClickSound } from '../utils/audio';
+import { playClickSound, playStarSound } from '../utils/audio';
+import { getBmiCategory } from './WeightHealthSection';
 
 interface ActiveWeekSectionProps {
   onChallengeClick?: () => void;
@@ -9,6 +10,9 @@ interface ActiveWeekSectionProps {
   onCloseFocus?: () => void;
   isQuizSolved?: boolean;
   onNavigateToNext?: () => void;
+  studentMassKg?: number;
+  studentHeightM?: number;
+  onNavigateToWeight?: () => void;
 }
 
 interface DayActivity {
@@ -21,23 +25,143 @@ interface DayActivity {
   name: string;
 }
 
+interface RoutinePreset {
+  categoryId: string;
+  badgeLabel: string;
+  title: string;
+  subtitle: string;
+  pedagogicalFocus: string;
+  guidelineSource: string;
+  targetDailyMinutes: number;
+  targetStrengthDays: number;
+  cardBorder: string;
+  cardBg: string;
+  accentText: string;
+  days: DayActivity[];
+}
+
+const ROUTINE_PRESETS: Record<'underweight' | 'normal' | 'overweight' | 'obesity', RoutinePreset> = {
+  underweight: {
+    categoryId: 'underweight',
+    badgeLabel: 'Baixo peso',
+    title: 'Rotina de Fortalecimento & Ganho de Massa Magra',
+    subtitle: 'Foco em exercícios resistidos, densidade óssea e esportes sem catabolismo excessivo',
+    pedagogicalFocus:
+      'Para a faixa de baixo peso, as diretrizes de saúde física orientam priorizar treinos resistidos e funcionais (peso corporal, elásticos e circuitos) que estimulam o ganho de massa muscular e óssea, combinados com pausas adequadas e alimentação balanceada.',
+    guidelineSource: 'Ministério da Saúde • Guia de Atividade Física para a População Brasileira',
+    targetDailyMinutes: 38,
+    targetStrengthDays: 3,
+    cardBorder: 'border-amber-300 dark:border-amber-700/80',
+    cardBg: 'bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-transparent dark:from-amber-950/40 dark:via-amber-900/10',
+    accentText: 'text-amber-800 dark:text-amber-300',
+    days: [
+      { id: 'seg', shortDay: 'Seg', iconEmoji: '🏋️‍♂️', iconBg: 'text-emerald-700', minutes: 40, isStrengthening: true, name: 'Treino funcional de força' },
+      { id: 'ter', shortDay: 'Ter', iconEmoji: '🚶‍♂️', iconBg: 'text-sky-600', minutes: 30, isStrengthening: false, name: 'Caminhada escolar leve' },
+      { id: 'qua', shortDay: 'Qua', iconEmoji: '🤸‍♂️', iconBg: 'text-indigo-600', minutes: 45, isStrengthening: true, name: 'Calistenia com peso corporal' },
+      { id: 'qui', shortDay: 'Qui', iconEmoji: '🧘‍♂️', iconBg: 'text-teal-600', minutes: 25, isStrengthening: false, name: 'Alongamento e mobilidade' },
+      { id: 'sex', shortDay: 'Sex', iconEmoji: '⚽', iconBg: 'text-emerald-600', minutes: 45, isStrengthening: false, name: 'Esporte coletivo recreativo' },
+      { id: 'sab', shortDay: 'Sáb', iconEmoji: '🏊‍♂️', iconBg: 'text-sky-600', minutes: 45, isStrengthening: true, name: 'Circuito resistido & natação' },
+      { id: 'dom', shortDay: 'Dom', iconEmoji: '🌳', iconBg: 'text-emerald-700', minutes: 35, isStrengthening: false, name: 'Passeio ativo no parque' },
+    ],
+  },
+  normal: {
+    categoryId: 'normal',
+    badgeLabel: 'Faixa adequada / Eutrofia',
+    title: 'Rotina Dinâmica & Resistência Global (Padrão Ouro OMS)',
+    subtitle: 'Equilíbrio pleno entre capacidade cardiorrespiratória, força e flexibilidade',
+    pedagogicalFocus:
+      'Para a faixa eutrófica, a Organização Mundial da Saúde (OMS) preconiza no mínimo 60 minutos diários em média de práticas físicas de intensidade moderada a vigorosa, integrando fortalecimento de músculos e ossos em pelo menos 3 dias da semana.',
+    guidelineSource: 'OMS • Diretrizes Globais sobre Atividade Física e Comportamento Sedentário',
+    targetDailyMinutes: 52,
+    targetStrengthDays: 3,
+    cardBorder: 'border-emerald-300 dark:border-emerald-700/80',
+    cardBg: 'bg-gradient-to-br from-emerald-500/10 via-teal-400/5 to-transparent dark:from-emerald-950/40 dark:via-teal-900/10',
+    accentText: 'text-emerald-800 dark:text-emerald-300',
+    days: [
+      { id: 'seg', shortDay: 'Seg', iconEmoji: '🚶‍♂️', iconBg: 'text-sky-600', minutes: 40, isStrengthening: false, name: 'Caminhada rápida / deslocamento ativo' },
+      { id: 'ter', shortDay: 'Ter', iconEmoji: '🚴‍♀️', iconBg: 'text-emerald-600', minutes: 50, isStrengthening: false, name: 'Pedalada no parque' },
+      { id: 'qua', shortDay: 'Qua', iconEmoji: '🏋️‍♂️', iconBg: 'text-emerald-700', minutes: 45, isStrengthening: true, name: 'Treino funcional e força' },
+      { id: 'qui', shortDay: 'Qui', iconEmoji: '🏀', iconBg: 'text-purple-600', minutes: 60, isStrengthening: false, name: 'Basquete / Vôlei com a turma' },
+      { id: 'sex', shortDay: 'Sex', iconEmoji: '⚽', iconBg: 'text-emerald-600', minutes: 60, isStrengthening: false, name: 'Futsal na quadra escolar' },
+      { id: 'sab', shortDay: 'Sáb', iconEmoji: '🧗‍♂️', iconBg: 'text-amber-600', minutes: 55, isStrengthening: true, name: 'Circuito de ginástica / atletismo' },
+      { id: 'dom', shortDay: 'Dom', iconEmoji: '🌳', iconBg: 'text-emerald-700', minutes: 50, isStrengthening: false, name: 'Passeio ativo e brincadeiras' },
+    ],
+  },
+  overweight: {
+    categoryId: 'overweight',
+    badgeLabel: 'Sobrepeso',
+    title: 'Rotina Cardio-Progressiva & Fortalecimento Articular',
+    subtitle: 'Atividades aeróbicas contínuas prazerosas e proteção com fortalecimento de core',
+    pedagogicalFocus:
+      'O Guia de Atividade Física do Ministério da Saúde orienta progressão consistente: práticas aeróbicas com baixo estresse nos joelhos e coluna (caminhadas aceleradas, bicicleta, dança) unidas a fortalecimento do core para estabilidade postural e saúde metabólica.',
+    guidelineSource: 'Ministério da Saúde • Promoção da Saúde e Práticas Corporais',
+    targetDailyMinutes: 44,
+    targetStrengthDays: 3,
+    cardBorder: 'border-orange-300 dark:border-orange-700/80',
+    cardBg: 'bg-gradient-to-br from-orange-500/10 via-amber-400/5 to-transparent dark:from-orange-950/40 dark:via-amber-900/10',
+    accentText: 'text-orange-800 dark:text-orange-300',
+    days: [
+      { id: 'seg', shortDay: 'Seg', iconEmoji: '🚶‍♂️', iconBg: 'text-sky-600', minutes: 45, isStrengthening: false, name: 'Caminhada rápida em terreno plano' },
+      { id: 'ter', shortDay: 'Ter', iconEmoji: '🚴‍♀️', iconBg: 'text-emerald-600', minutes: 45, isStrengthening: false, name: 'Ciclismo leve ou esteira guiada' },
+      { id: 'qua', shortDay: 'Qua', iconEmoji: '🏋️‍♂️', iconBg: 'text-emerald-700', minutes: 40, isStrengthening: true, name: 'Exercícios funcionais & core' },
+      { id: 'qui', shortDay: 'Qui', iconEmoji: '💃', iconBg: 'text-purple-600', minutes: 45, isStrengthening: false, name: 'Dança recreativa e ritmo' },
+      { id: 'sex', shortDay: 'Sex', iconEmoji: '🏸', iconBg: 'text-emerald-600', minutes: 45, isStrengthening: false, name: 'Badminton / esporte recreativo' },
+      { id: 'sab', shortDay: 'Sáb', iconEmoji: '🌳', iconBg: 'text-sky-600', minutes: 50, isStrengthening: true, name: 'Caminhada no parque com pausas ativas' },
+      { id: 'dom', shortDay: 'Dom', iconEmoji: '🚶‍♀️', iconBg: 'text-emerald-700', minutes: 35, isStrengthening: false, name: 'Passeio descontraído ao ar livre' },
+    ],
+  },
+  obesity: {
+    categoryId: 'obesity',
+    badgeLabel: 'Obesidade (Grau I, II e III)',
+    title: 'Rotina Ativa Segura de Baixo Impacto Articular',
+    subtitle: 'Ênfase em esportes aquáticos, caminhadas prazerosas e sustentação postural',
+    pedagogicalFocus:
+      'Com foco no conforto articular e adesão duradoura, a recomendação prioriza modalidades que poupam articulações — hidroginástica, pedalada estacionária suave e circuitos posturais sentados/com elásticos —, valorizando o hábito e a vitalidade sem restrição punitiva.',
+    guidelineSource: 'Ministério da Saúde & OMS • Atenção à Saúde Integral',
+    targetDailyMinutes: 37,
+    targetStrengthDays: 2,
+    cardBorder: 'border-rose-300 dark:border-rose-700/80',
+    cardBg: 'bg-gradient-to-br from-rose-500/10 via-pink-400/5 to-transparent dark:from-rose-950/40 dark:via-pink-900/10',
+    accentText: 'text-rose-800 dark:text-rose-300',
+    days: [
+      { id: 'seg', shortDay: 'Seg', iconEmoji: '🚶‍♂️', iconBg: 'text-sky-600', minutes: 35, isStrengthening: false, name: 'Caminhada leve e confortável' },
+      { id: 'ter', shortDay: 'Ter', iconEmoji: '🏊‍♀️', iconBg: 'text-sky-600', minutes: 45, isStrengthening: false, name: 'Hidroginástica ou natação recreativa' },
+      { id: 'qua', shortDay: 'Qua', iconEmoji: '🧘‍♂️', iconBg: 'text-teal-600', minutes: 35, isStrengthening: true, name: 'Pilates solo & postura' },
+      { id: 'qui', shortDay: 'Qui', iconEmoji: '🚴‍♂️', iconBg: 'text-emerald-600', minutes: 35, isStrengthening: false, name: 'Bicicleta ergométrica suave' },
+      { id: 'sex', shortDay: 'Sex', iconEmoji: '🏋️‍♂️', iconBg: 'text-emerald-700', minutes: 35, isStrengthening: true, name: 'Circuito com elásticos e apoios' },
+      { id: 'sab', shortDay: 'Sáb', iconEmoji: '💃', iconBg: 'text-purple-600', minutes: 40, isStrengthening: false, name: 'Dança suave e expressão corporal' },
+      { id: 'dom', shortDay: 'Dom', iconEmoji: '🌳', iconBg: 'text-emerald-700', minutes: 30, isStrengthening: false, name: 'Passeio tranquilo e contato com a natureza' },
+    ],
+  },
+};
+
 export const ActiveWeekSection: React.FC<ActiveWeekSectionProps> = ({
   onChallengeClick,
   isFocusedView = false,
   onCloseFocus,
   isQuizSolved = false,
   onNavigateToNext,
+  studentMassKg,
+  studentHeightM,
+  onNavigateToWeight,
 }) => {
-  const [days, setDays] = useState<DayActivity[]>([
-    { id: 'seg', shortDay: 'Seg', iconEmoji: '🚶‍♂️', iconBg: 'text-sky-600', minutes: 30, isStrengthening: false, name: 'Caminhada escolar' },
-    { id: 'ter', shortDay: 'Ter', iconEmoji: '🚴‍♀️', iconBg: 'text-emerald-600', minutes: 45, isStrengthening: false, name: 'Pedalada no parque' },
-    { id: 'qua', shortDay: 'Qua', iconEmoji: '🏋️‍♂️', iconBg: 'text-emerald-700', minutes: 30, isStrengthening: true, name: 'Treino funcional' },
-    { id: 'qui', shortDay: 'Qui', iconEmoji: '🏃‍♀️', iconBg: 'text-purple-600', minutes: 40, isStrengthening: false, name: 'Corrida e ritmo' },
-    { id: 'sex', shortDay: 'Sex', iconEmoji: '⚽', iconBg: 'text-emerald-600', minutes: 60, isStrengthening: false, name: 'Futsal na quadra' },
-    { id: 'sab', shortDay: 'Sáb', iconEmoji: '♿', iconBg: 'text-sky-600', minutes: 30, isStrengthening: true, name: 'Basquete adaptado' },
-    { id: 'dom', shortDay: 'Dom', iconEmoji: '🌳', iconBg: 'text-emerald-700', minutes: 45, isStrengthening: false, name: 'Passeio em família' },
-  ]);
+  const currentMass = studentMassKg ?? 65;
+  const currentHeight = studentHeightM ?? 1.70;
+  const calculatedBMI = currentHeight > 0
+    ? Number((currentMass / (currentHeight * currentHeight)).toFixed(1))
+    : 22.5;
 
+  const bmiCategory = useMemo(() => getBmiCategory(calculatedBMI), [calculatedBMI]);
+
+  const routinePreset = useMemo(() => {
+    if (bmiCategory.id === 'underweight') return ROUTINE_PRESETS.underweight;
+    if (bmiCategory.id === 'overweight') return ROUTINE_PRESETS.overweight;
+    if (['obesity1', 'obesity2', 'obesity3'].includes(bmiCategory.id)) return ROUTINE_PRESETS.obesity;
+    return ROUTINE_PRESETS.normal;
+  }, [bmiCategory.id]);
+
+  const [days, setDays] = useState<DayActivity[]>(() => routinePreset.days);
+  const [appliedFeedback, setAppliedFeedback] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<DayActivity | null>(null);
 
   // Metrics
@@ -49,6 +173,13 @@ export const ActiveWeekSection: React.FC<ActiveWeekSectionProps> = ({
     setDays((prev) =>
       prev.map((d) => (d.id === dayId ? { ...d, minutes: Math.max(0, newMinutes) } : d))
     );
+  };
+
+  const handleApplyPreset = () => {
+    playStarSound();
+    setDays(routinePreset.days);
+    setAppliedFeedback(`Rotina "${routinePreset.title}" aplicada para os 7 dias!`);
+    setTimeout(() => setAppliedFeedback(null), 4500);
   };
 
   return (
@@ -79,6 +210,79 @@ export const ActiveWeekSection: React.FC<ActiveWeekSectionProps> = ({
             >
               ← Voltar à Visão Geral
             </button>
+          )}
+        </div>
+
+        {/* Personalized Recommendation Card based on Mission 2 IMC Classification */}
+        <div className={`mb-4 p-3.5 sm:p-4 rounded-3xl border-2 ${routinePreset.cardBorder} ${routinePreset.cardBg} shadow-xs backdrop-blur-xs transition-all`}>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-200/70 dark:border-blue-900/60">
+            <div className="flex items-start sm:items-center gap-2.5 flex-wrap">
+              <span className="text-2xl">{bmiCategory.icon}</span>
+              <div>
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Sua Classificação (Missão 2):
+                  </span>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-black border ${bmiCategory.badgeBg}`}>
+                    {bmiCategory.classification}
+                  </span>
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 font-mono bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded-lg border border-slate-200/80 dark:border-blue-900">
+                    IMC: {calculatedBMI} kg/m²
+                  </span>
+                </div>
+                <h3 className={`text-sm sm:text-base font-black ${routinePreset.accentText} mt-0.5`}>
+                  {routinePreset.title}
+                </h3>
+              </div>
+            </div>
+
+            {onNavigateToWeight && (
+              <button
+                type="button"
+                onClick={() => {
+                  playClickSound();
+                  onNavigateToWeight();
+                }}
+                className="text-[11px] sm:text-xs font-bold text-teal-800 dark:text-blue-300 hover:text-teal-950 dark:hover:text-white flex items-center gap-1 bg-white/80 dark:bg-blue-950/60 hover:bg-white dark:hover:bg-blue-900/80 px-2.5 py-1.5 rounded-xl border border-teal-200 dark:border-blue-800 transition cursor-pointer shrink-0 self-start md:self-auto"
+                title="Ir para a Missão 2 e ajustar medidas de peso ou estatura"
+              >
+                <span>Ajustar peso na Missão 2</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <p className="text-xs sm:text-[13px] text-slate-700 dark:text-slate-200 mt-2.5 leading-relaxed">
+            {routinePreset.pedagogicalFocus}
+          </p>
+
+          <div className="mt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap text-xs font-bold">
+              <div className="flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/90 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-blue-900 text-slate-800 dark:text-slate-200 shadow-2xs">
+                <Clock className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                <span>Meta: <strong className="font-mono text-teal-700 dark:text-teal-300">~{routinePreset.targetDailyMinutes} min/dia</strong></span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/90 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-blue-900 text-slate-800 dark:text-slate-200 shadow-2xs">
+                <Dumbbell className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Fortalecimento: <strong className="font-mono text-emerald-700 dark:text-emerald-300">{routinePreset.targetStrengthDays} dias/sem</strong></span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleApplyPreset}
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 active:scale-98 text-white font-black text-xs shadow-md shadow-teal-700/20 flex items-center justify-center gap-2 cursor-pointer transition-all"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+              <span>Aplicar Rotina Sugerida para Esta Semana</span>
+            </button>
+          </div>
+
+          {appliedFeedback && (
+            <div className="mt-2.5 p-2 bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-2 animate-in fade-in duration-200">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span>{appliedFeedback}</span>
+            </div>
           )}
         </div>
 
