@@ -38,7 +38,7 @@ export const StudentLoginModal: React.FC<StudentLoginModalProps> = ({
   const [selectedAvatarId, setSelectedAvatarId] = useState<string>(
     STUDENT_AVATARS.find((a) => a.emoji === currentStudent?.avatarEmoji)?.id ?? STUDENT_AVATARS[0]?.id ?? 'student_1'
   );
-  const [grade, setGrade] = useState<string>(currentStudent?.grade || GRADE_OPTIONS[0] || '6° Ano');
+  const [grade, setGrade] = useState<string>(currentStudent?.grade || GRADE_OPTIONS[0] || '9° Ano');
   const [school, setSchool] = useState<string>(currentStudent?.school || 'CETi Agostinho Ernesto de Almeida');
   const [errorMessage, setErrorMessage] = useState('');
 

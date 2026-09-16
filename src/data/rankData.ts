@@ -19,9 +19,6 @@ export const STUDENT_AVATARS: AvatarOption[] = [
 ];
 
 export const GRADE_OPTIONS = [
-  '6° Ano',
-  '7° Ano',
-  '8° Ano',
   '9° Ano',
   '1° Ano E.M',
   '2° Ano E.M',
