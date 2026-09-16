@@ -4,18 +4,94 @@ export interface AvatarOption {
   id: string;
   emoji: string;
   label: string;
+  role: string;
+  tag: string;
+  badgeEmoji: string;
   bgColor: string;
+  motto: string;
 }
 
 export const STUDENT_AVATARS: AvatarOption[] = [
-  { id: 'student_1', emoji: '🧑‍🎓', label: 'Explorador', bgColor: 'from-teal-400 to-emerald-500' },
-  { id: 'student_2', emoji: '👧🏽', label: 'Cientista', bgColor: 'from-amber-400 to-orange-500' },
-  { id: 'student_3', emoji: '👦🏻', label: 'Atleta', bgColor: 'from-sky-400 to-blue-600' },
-  { id: 'student_4', emoji: '👩🏾', label: 'Corredora', bgColor: 'from-rose-400 to-pink-500' },
-  { id: 'student_5', emoji: '🧑🏼‍🦽', label: 'Campeão', bgColor: 'from-indigo-400 to-purple-600' },
-  { id: 'student_6', emoji: '🧒🏿', label: 'Nutri-Júnior', bgColor: 'from-emerald-400 to-teal-600' },
-  { id: 'student_7', emoji: '🧑🏽‍🍳', label: 'Chef Saudável', bgColor: 'from-orange-400 to-amber-600' },
-  { id: 'student_8', emoji: '🎨', label: 'Criativo', bgColor: 'from-purple-400 to-pink-500' },
+  {
+    id: 'student_1',
+    emoji: '🧑‍🎓',
+    label: 'Explorador',
+    role: 'Lógica & Mente',
+    tag: 'Lógica',
+    badgeEmoji: '🧭',
+    bgColor: 'from-emerald-400 via-teal-500 to-cyan-600',
+    motto: 'Curioso e focado em desvendar os cálculos e mistérios da saúde!',
+  },
+  {
+    id: 'student_2',
+    emoji: '👩‍🔬',
+    label: 'Cientista',
+    role: 'Dados & Pesquisa',
+    tag: 'Ciência',
+    badgeEmoji: '🔬',
+    bgColor: 'from-amber-400 via-orange-500 to-red-500',
+    motto: 'Analisa proporções, tabelas nutricionais e dados com precisão.',
+  },
+  {
+    id: 'student_3',
+    emoji: '🏃‍♂️',
+    label: 'Atleta',
+    role: 'Energia & Foco',
+    tag: 'Energia',
+    badgeEmoji: '⚡',
+    bgColor: 'from-sky-400 via-blue-500 to-indigo-600',
+    motto: 'Movimento diário constante para alcançar a meta de minutos ativos!',
+  },
+  {
+    id: 'student_4',
+    emoji: '🏃‍♀️',
+    label: 'Corredora',
+    role: 'Ritmo & Velocidade',
+    tag: 'Ritmo',
+    badgeEmoji: '🔥',
+    bgColor: 'from-rose-400 via-pink-500 to-purple-600',
+    motto: 'Supera desafios a cada semana com determinação e dinamismo.',
+  },
+  {
+    id: 'student_5',
+    emoji: '🧑‍🦽',
+    label: 'Campeão',
+    role: 'Inclusão & Garra',
+    tag: 'Inclusão',
+    badgeEmoji: '🏆',
+    bgColor: 'from-indigo-400 via-purple-500 to-violet-600',
+    motto: 'Resiliência, inclusão e força de vontade para vencer qualquer desafio!',
+  },
+  {
+    id: 'student_6',
+    emoji: '🧑‍🌾',
+    label: 'Nutri-Júnior',
+    role: 'Horta & Alimentos',
+    tag: 'Nutrição',
+    badgeEmoji: '🥗',
+    bgColor: 'from-teal-400 via-emerald-500 to-green-600',
+    motto: 'Especialista em alimentos in natura e na montagem do prato colorido.',
+  },
+  {
+    id: 'student_7',
+    emoji: '🧑‍🍳',
+    label: 'Chef Saudável',
+    role: 'Culinária & Sabor',
+    tag: 'Culinária',
+    badgeEmoji: '🍳',
+    bgColor: 'from-orange-400 via-amber-500 to-yellow-500',
+    motto: 'Combina ingredientes saudáveis em receitas balanceadas e saborosas.',
+  },
+  {
+    id: 'student_8',
+    emoji: '🧑‍🎨',
+    label: 'Criativo',
+    role: 'Arte & Expressão',
+    tag: 'Criativo',
+    badgeEmoji: '🎨',
+    bgColor: 'from-fuchsia-400 via-pink-500 to-rose-500',
+    motto: 'Traz cor, originalidade e inovação para toda a jornada escolar.',
+  },
 ];
 
 export const GRADE_OPTIONS = [
